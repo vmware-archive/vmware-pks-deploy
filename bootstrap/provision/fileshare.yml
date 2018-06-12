@@ -1,0 +1,7 @@
+---
+- name: Deploy a webserver for hosting binaries
+  hosts: bootstrap
+  become: True
+  roles:
+    - nginx
+    
