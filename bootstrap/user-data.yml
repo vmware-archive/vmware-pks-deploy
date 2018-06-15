@@ -32,6 +32,7 @@ ntp:
   enabled: true
 packages:
   - curl
+  - docker.io
   - open-vm-tools
   - python-setuptools
   - python2.7
