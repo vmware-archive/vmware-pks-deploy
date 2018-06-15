@@ -9,6 +9,8 @@ export GOVC_DATACENTER=${GOVC_DATACENTER:='Goddard'}
 export GOVC_DATASTORE=${GOVC_DATASTORE:='vms'}
 export GOVC_USERNAME=${GOVC_USERNAME:='administrator@vsphere.local'}
 export GOVC_RESOURCE_POOL=${GOVC_RESOURCE_POOL:=''}
+export MY_VMWARE_USER=${MY_VMWARE_USER:'none'}
+export MY_VMWARE_PASSWORD=${MY_VMWARE_PASSWORD:'none'}
 
 
 exec "/bootstrap-vm.sh"
