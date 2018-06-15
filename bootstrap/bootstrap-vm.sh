@@ -93,6 +93,18 @@ until ssh "${opts[@]}" vmware@$ip "grep 'runcmd done' /etc/cmds"; do
 done
 echo "Done"
 
-echo "Provision extras in the VM"
+echo "Provision extras in the VM, may run several times to get convergence"
 rsync "${rsyncopts[@]}" provision vmware@${ip}:
-ssh -t "${opts[@]}" vmware@$ip "cd provision; ansible-galaxy install -r external_roles.yml; ansible-playbook  --vault-password-file=vault-pass -i inventory site.yml; sudo shutdown -r +1; true" 
+until ssh -t "${opts[@]}" vmware@$ip "cd provision; ansible-galaxy install -r external_roles.yml; ansible-playbook  -i inventory site.yml || (sudo shutdown -r +1 && false);" ; do
+  echo -n "."
+  sleep 5
+done
+echo "Done"
+
+if [ -n "$MY_VMWARE_USER" ] && [ -n "$MY_VMWARE_PASSWORD" ]; then
+  echo "Setup downloader config"
+  echo '{ "username": "'$MY_VMWARE_USER'", "password": "'$MY_VMWARE_PASSWORD'"}' > /deployroot/pks-deploy/downloads/config.json
+fi
+
+echo "Copy code to the jumpbox"
+rsync "${rsyncopts[@]}" /deployroot vmware@${ip}:

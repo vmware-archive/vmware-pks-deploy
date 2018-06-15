@@ -57,10 +57,19 @@ There are several parameters you can pass in to this provisioning step:
 * `GOVC_DATASTORE`: datastore in which to place the VM (default is 'vms')
 * `GOVC_USERNAME`: administrator username (default is 'administrator@vsphere.local')
 * `GOVC_RESOURCE_POOL`: resource pool in which to place the VM (default is none)
+* `MY_VMWARE_USER`: Username used to log into my.vmware.com when downloading binaries, no default
+* `MY_VMWARE_PASSWORD`: Password used to log into my.vmware.com when downloading bin, no default
 
 You can edit [docker-env](./docker-env) in this directory to reflect your environment.  This is passed in to the provisioning process in the following command:
 
 ``` bash
+# for debugging purposes, this may be better:
+docker run -it --env-file docker-env --entrypoint /bin/bash bootstrap
+bash-4.4# ./entrypoint.sh
+# and if failures happen... you can re-run
+bash-4.4# ./entrypoint.sh
+
+# For a one-shot run, try:
 docker run -it --env-file docker-env bootstrap
 ```
 
