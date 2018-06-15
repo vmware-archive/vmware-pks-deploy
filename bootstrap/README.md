@@ -64,13 +64,13 @@ You can edit [docker-env](./docker-env) in this directory to reflect your enviro
 
 ``` bash
 # for debugging purposes, this may be better:
-docker run -it --env-file docker-env --entrypoint /bin/bash bootstrap
+docker run -it --env-file docker-env -v $PWD/../..:/deployroot --entrypoint /bin/bash bootstrap
 bash-4.4# ./entrypoint.sh
 # and if failures happen... you can re-run
 bash-4.4# ./entrypoint.sh
 
 # For a one-shot run, try:
-docker run -it --env-file docker-env bootstrap
+docker run -it --env-file docker-env -v $PWD/../..:/deployroot bootstrap
 ```
 
 After this completes, you should have a VM in the vCenter named after your `$VM_NAME`.

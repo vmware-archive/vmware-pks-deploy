@@ -1,6 +1,3 @@
-packer_version: "1.2.3"
-workstation_license: "{{vault_workstation_license}}"
-
 ovf_zip_url: "https://www.dropbox.com/s/n5pepfatetp55q2/VMware-ovftool-4.3.0-7948156-lin.x86_64.bundle?dl=1"
 ovf_zip: "VMware-ovftool-4.3.0-7948156-lin.x86_64.bundle"
 ovf_zip_md5: "4f6e2afbcf72640cb5863bf3f60d575e"
@@ -9,7 +6,9 @@ nginx_sites:
   default:
      - listen 80
      - server_name _
-     - root "/fileshare"
+     - root "/home/vmware/deployroot/pks-deploy/downloads"
+     - autoindex on
+
 
 postgresql_databases:
 - name: concourse
