@@ -1,0 +1,41 @@
+{
+  "DiskProvisioning": "thin",
+  "IPAllocationPolicy": "dhcpPolicy",
+  "IPProtocol": "IPv4",
+  "PropertyMapping": [
+    {
+      "Key": "instance-id",
+      "Value": "id-ovf"
+    },
+    {
+      "Key": "hostname",
+      "Value": "ubuntuguest"
+    },
+    {
+      "Key": "seedfrom",
+      "Value": ""
+    },
+    {
+      "Key": "public-keys",
+      "Value": ""
+    },
+    {
+      "Key": "user-data",
+      "Value": $userdata
+    },
+    {
+      "Key": "password",
+      "Value": ""
+    }
+  ],
+  "NetworkMapping": [
+    {
+      "Name": "VM Network",
+      "Network": $network
+    }
+  ],
+  "PowerOn": false,
+  "InjectOvfEnv": false,
+  "WaitForIP": false,
+  "Name": null
+}

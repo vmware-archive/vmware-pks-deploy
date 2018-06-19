@@ -1,0 +1,50 @@
+#cloud-config
+debug:
+  verbose: true
+bootcmd:
+  - echo 'boot cmd execute' >> /etc/cmds
+runcmd:
+  - echo "moooo!"
+  - easy_install pip
+  - pip install --no-clean ansible
+  - echo 'runcmd done' >> /etc/cmds
+chpasswd: { expire: False }
+chpasswd:
+  list: |
+    root:VMware1!
+  expire: False
+ssh_pwauth: yes
+users:
+  - name: vmware
+    passwd: $6$rounds=8888$y1zBWcO8MT$J2a599jjEaJDV5Vq3t4yEKz7CVOmJqidRmv4h1fXlkzHArHEcBNUVwbnSGrIaJ2aHUwxRMS193SyuH9fKQJD20
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users,wheel
+    lock_passwd: false
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDsDYOXiGgQR1bdrvUP9/U5kchBMh0N8tCdOFfF0C7aGO3bwoztq7F46ojIOMz9r9yryrHaVgjrbxNEEjhGz7tfzUo3ix7oHGDgpkkNt+4Nuu7c4tJjsAUMgDj7cPslUt13IjKPHbcJVTXuyVn1fVdiQgU1B7SPVUSwwE8W1VLt2ogCCrWtll3rEU+XyzKFi/csTbzSUx7K05w7yfBLnEO5Ba2gFNdeu0AYuLABDn3DYAbbIJrE5vRNyA/1QuqWkxGuB1VRzpeF6X5+Z0NE9rQwFyCY80QrH+9lVinY6SdsvUOKK4bOxQ1H6JhcyeQ8phLFbr8REigrev11Nrrh31Tx tscanlan@tscanlan-M01.vmware.com
+      - %%GENERATED_KEY%%
+    ssh_import_id:
+      - gh:tompscanlan
+    shell: /bin/bash
+hostname: ubuntu
+final_message: 'The system is finally up after $UPTIME seconds using $DATASOURCE and $VERSION'
+ntp:
+  enabled: true
+packages:
+  - curl
+  - docker.io
+  - open-vm-tools
+  - python-setuptools
+  - python2.7
+  - python2.7-dev
+  - unzip
+  # - xubuntu-desktop
+apt_update: true
+apt_upgrade: true
+apt_reboot_if_required: true
+manage_resolv_conf: true
+resolv_conf:
+    nameservers: ['8.8.4.4', '8.8.8.8']
+growpart:
+  mode: auto
+  devices: ['/']
