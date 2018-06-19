@@ -50,10 +50,17 @@ This process is as follows:
 ``` bash
 mkdir pks-deploy-testing
 cd pks-deploy-testing
+<<<<<<< HEAD
 repo init -u https://github.com/vmware/vmware-pks-deploy-meta.git
 # or, with ssh: (you will have first had to register an SSH key with Github)
 repo init -u git@github.com:vmware/vmware-pks-deploy-meta.git
 # Then sync, which pulls down the code.
+=======
+repo init -u http://gitlab.com/vmware-esp/pks-deploy-meta.git
+# or, with ssh:
+repo init -u git@gitlab.com:vmware-esp/pks-deploy-meta.git
+# you will need to enter gitlab credentials here
+>>>>>>> Spelling fixes.
 repo sync
 ```
 
