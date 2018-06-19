@@ -9,6 +9,8 @@ runcmd:
   - easy_install pip
   - pip install --no-clean ansible
   - echo 'runcmd done' >> /etc/cmds
+# Concourse containers require forwarding
+  - iptables -I FORWARD -j ACCEPT
 chpasswd: { expire: False }
 chpasswd:
   list: |

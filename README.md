@@ -78,7 +78,7 @@ These files will be hosted via nginx after they download at `http://jumpbox-ip`.
 ### Apply various pipelines
 
 On the jumpbox, the pipelines exist at `/home/vmware/deployroot` and concourse is running on `http://jumpbox-ip:8080` with the same credentials as ssh to log in.
-You can use fly from the jumpbox to apply the pipelines. To log in try `fly --target main login -c http://localhost:8080`
+You can use fly from the jumpbox to apply the pipelines. To log in try `fly --target main login -c http://localhost:8080` and `fly pipelines --target main`
 
 #### Install NSX-T
 
