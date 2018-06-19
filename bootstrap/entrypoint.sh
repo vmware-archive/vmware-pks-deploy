@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-export VM_NAME=${VM_NAME:='pks-bootstraper'}
+export VM_NAME=${VM_NAME:='pks-bootstrapper'}
 export GOVC_NETWORK=${GOVC_NETWORK:='VM Network'}
 export GOVC_PASSWORD=${GOVC_PASSWORD:='VMware1!'}
 export GOVC_INSECURE=${GOVC_INSECURE:='1'}

@@ -36,7 +36,7 @@ do
   esac
 done
 
-keyfile=~/.ssh/id_rsa.pks-bootstraper
+keyfile=~/.ssh/id_rsa.pks-bootstrapper
 if [ ! -f $keyfile ]; then
   echo "Generate and use a temporary key ssh..."
   ssh-keygen -f $keyfile -t rsa -N ''
