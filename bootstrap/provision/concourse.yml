@@ -1,0 +1,16 @@
+- name: Create a single node Concourse host
+  hosts: bootstrap
+  become: True
+  vars:
+  roles:
+    - { name: "postgresql", tags: "postgresql" }
+    - { name: "concourse", tags: "concourse"  }
+  # tasks:
+  #   - name: copy fly into path
+  #     become: True
+  #     copy:
+  #       src: /opt/concourseci/bin/fly
+  #       dest: /bin/fly
+  #       owner: root
+  #       group: root
+  #       mode: 0755
