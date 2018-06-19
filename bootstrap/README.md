@@ -4,7 +4,7 @@ We want to stand up a simple VM on which to
 
 * run ansible playbooks
 * install and run Concourse
-* download and host binaries to install into vShpere and other VMs
+* download and host binaries to install into vSphere and other VMs
 
 We'll enable standing this VM up, and capturing it as an OFV for a pre-packaged VM
 
@@ -16,9 +16,9 @@ We'll enable standing this VM up, and capturing it as an OFV for a pre-packaged 
   * a vCenter to which this machine can connect
   * ovftool (optional: only needed if you need to capture an OVF after bootstrapping)
 * DHCP for the network the bootstrap VM will be created on
-* a default recource pool into which we will install the bootstrap VM
+* a default resource pool into which we will install the bootstrap VM
 
-## Preperation
+## Preparation
 
 ### user-data (optional)
 
@@ -77,7 +77,7 @@ After this completes, you should have a VM in the vCenter named after your `$VM_
 
 ## Capture an ovf
 
-You can capture an ovf from the bootstraped VM for future deploys without waiting for the bootstrap procss to download and configure everything.
+You can capture an ovf from the bootstrapped VM for future deploys without waiting for the bootstrap process to download and configure everything.
 
 ``` bash
 govc vm.power -off pks-bootstrapper

@@ -34,7 +34,9 @@ This process is as follows:
 ``` bash
 mkdir pks-deploy-testing
 cd pks-deploy-testing
-repo init -u http://gitlab.eng.vmware.com/ps-emerging/pks-deploy-meta.git
+repo init -u http://gitlab.com/vmware-esp/pks-deploy-meta.git
+# or, with ssh:
+repo init -u git@gitlab.com:vmware-esp/pks-deploy-meta.git
 # you will need to enter gitlab credentials here
 repo sync
 ```
@@ -44,7 +46,7 @@ and you'll see there are several directories.  These are each a git repository.
 
 We'll focus on the `pks-deploy` repository.
 
-## Bootstraping
+## Bootstrapping
 
 Go into `pks-deploy/bootstrap`.
 This directory contains code that will create a VM in vCenter, install Concourse, ansible, and other tools into that VM.
