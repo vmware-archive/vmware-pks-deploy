@@ -1,0 +1,20 @@
+---
+image: docker:latest
+
+build-bootstrap:
+  services:
+  - docker:dind
+  script:
+  - docker info
+  - cd bootstrap
+  - docker build -t ${CI_REGISTRY_IMAGE}/bootstrap .
+#  - docker run ${CI_REGISTRY_IMAGE}/bootstrap
+
+test-bootstrap-provision:
+  image: williamyeh/ansible:ubuntu16.04
+  script:
+  - apt-get update -qq
+  - apt-get install -y git python-apt
+  - cd bootstrap/provision
+  - ansible-galaxy install -r external_roles.yml
+#  - ansible-playbook -i inventory site.yml --check
