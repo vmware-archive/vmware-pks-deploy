@@ -23,3 +23,11 @@
       when:
         - download_fly.changed
         - not download_fly.failed
+    - name: check iptables is available
+      stat:
+        path: /sbin/iptables
+      register: iptables_stat
+    - name: iptables forward, for Concourse containers
+      become: True
+      command: iptables -I FORWARD -j ACCEPT
+      when: iptables_stat.stat.exists

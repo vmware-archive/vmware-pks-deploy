@@ -3,9 +3,6 @@
   hosts: bootstrap
   become: True
   roles:
-#    - andrewrothstein.packer
-#    - vmware.vmware-workstation
-#    - vmware.ovftool
     - vmware.govc
 
 - import_playbook: concourse.yml
