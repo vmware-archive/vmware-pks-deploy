@@ -27,6 +27,20 @@ The overall process for a full PKS deployment is
 ***Do not clone this repository.***
 Instead, [install Google Repo](https://source.android.com/source/downloading#installing-repo).
 
+Here's a quick google repo install for the impatient.
+```bash
+# Validate python
+python2.7 -c "print 'Python OK'" || echo 'Need python 2.7!'
+python --version | grep "Python 2" || echo 'Warning: python 3 is default!'
+mkdir ~/bin
+PATH=~/bin:$PATH
+curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+chmod a+x ~/bin/repo
+# If you get a warning that about python 3, you might run this:
+# After repo is installed:
+sed -ri "1s:/usr/bin/env python:/usr/bin/python2.7:" ~/bin/repo
+```
+
 Once you've installed Google Repo, you will use it to download and assemble all the component git repositories.
 
 This process is as follows:
