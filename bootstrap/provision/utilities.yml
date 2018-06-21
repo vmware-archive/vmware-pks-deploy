@@ -1,0 +1,6 @@
+- name: Add some useful command line utilities 
+  hosts: bootstrap
+  become: True
+  vars:
+  roles:
+    - { name: "kubectl", tags: "kubectl" }
