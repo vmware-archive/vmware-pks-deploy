@@ -20,6 +20,13 @@ We'll enable standing this VM up, and capturing it as an OFV for a pre-packaged 
 
 ## Preparation
 
+You may be able to run the ```prep.sh``` script to get ready to build the
+bootstrap docker container.
+
+``` bash
+./prep.sh
+```
+
 ### user-data (optional)
 
 Edit [user-data.yml](./user-data.yml) to add your ssh key if desired.  There is a default
@@ -59,6 +66,7 @@ There are several parameters you can pass in to this provisioning step:
 * `GOVC_RESOURCE_POOL`: resource pool in which to place the VM (default is none)
 * `MY_VMWARE_USER`: Username used to log into my.vmware.com when downloading binaries, no default
 * `MY_VMWARE_PASSWORD`: Password used to log into my.vmware.com when downloading bin, no default
+* `PIVNET_API_TOKEN`: API token for network.pivotal.io for downloading binaries, no default
 
 You can edit [docker-env](./docker-env) in this directory to reflect your environment.  This is passed in to the provisioning process in the following command:
 

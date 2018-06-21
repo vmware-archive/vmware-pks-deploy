@@ -6,3 +6,6 @@ GOVC_DATACENTER=RegionA01
 GOVC_DATASTORE=RegionA01-ISCSI01-COMP01
 GOVC_USERNAME=administrator@vsphere.local
 GOVC_RESOURCE_POOL=pks-deploy
+#MY_VMWARE_USER=some_user@vmware.com
+#MY_VMWARE_PASSWORD=super_secret
+#PIVNET_API_TOKEN=super_secret

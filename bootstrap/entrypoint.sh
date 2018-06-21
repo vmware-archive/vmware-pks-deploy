@@ -11,6 +11,7 @@ export GOVC_USERNAME=${GOVC_USERNAME:='administrator@vsphere.local'}
 export GOVC_RESOURCE_POOL=${GOVC_RESOURCE_POOL:=''}
 export MY_VMWARE_USER=${MY_VMWARE_USER:'none'}
 export MY_VMWARE_PASSWORD=${MY_VMWARE_PASSWORD:'none'}
+export PIVNET_API_TOKEN=${PIVNET_API_TOKEN:'none'}
 
 
 exec "/bootstrap-vm.sh"

@@ -102,10 +102,14 @@ echo -n "Copy code to the jumpbox"
 rsync "${rsyncopts[@]}" /deployroot vmware@${ip}:
 echo "Done"
 
+exvars=(-e pivnet_api_token=$PIVNET_API_TOKEN)
+
 echo "Provision extras in the VM, may run several times to get convergence"
 rsync "${rsyncopts[@]}" provision vmware@${ip}:
-until ssh -t "${opts[@]}" vmware@$ip "cd provision; ansible-galaxy install -r external_roles.yml; ansible-playbook  -i inventory site.yml || (sudo shutdown -r +1 && false);" ; do
+until ssh -t "${opts[@]}" vmware@$ip "cd provision; ansible-galaxy install -r external_roles.yml; ansible-playbook  -i inventory ${exvars[@]} site.yml || (sudo shutdown -r +1 && false);" ; do
   echo -n "."
   sleep 5
 done
 echo "Done"
+
+echo "Completed configuration of $vm with IP $ip"
