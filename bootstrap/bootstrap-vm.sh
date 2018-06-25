@@ -36,7 +36,7 @@ do
   esac
 done
 
-keyfile=~/.ssh/id_rsa.pks-bootstrapper
+keyfile=~/.ssh/id_rsa.concourse-bootstrapper
 if [ ! -f $keyfile ]; then
   echo "Generate and use a temporary key ssh..."
   ssh-keygen -f $keyfile -t rsa -N ''
@@ -95,7 +95,7 @@ echo "Done"
 
 if [ -n "$MY_VMWARE_USER" ] && [ -n "$MY_VMWARE_PASSWORD" ]; then
   echo "Setup downloader config"
-  echo '{ "username": "'$MY_VMWARE_USER'", "password": "'$MY_VMWARE_PASSWORD'"}' > /deployroot/pks-deploy/downloads/config.json
+  echo '{ "username": "'$MY_VMWARE_USER'", "password": "'$MY_VMWARE_PASSWORD'"}' > /deployroot/concourse-deploy/downloads/config.json
 fi
 
 echo -n "Copy code to the jumpbox"
