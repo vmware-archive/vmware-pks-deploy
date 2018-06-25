@@ -1,11 +1,12 @@
 # vmware-pks-deploy
 
+[![Build Status](https://travis-ci.org/vmware/vmware-pks-deploy.svg?branch=master)](https://travis-ci.org/vmware/vmware-pks-deploy)
+
 This is a project intended to document and automate the process required for a PKS + NSX-T deployment on vSphere.
 
 Read
 [Niran's step-by-step NSX-T deploy](https://onevmw-my.sharepoint.com/:w:/r/personal/nevenchen_vmware_com/_layouts/15/Doc.aspx?sourcedoc=%7B06F3406E-D0A2-42AE-9F5C-F35583D92EDF%7D&file=Deploy%20NSX-T%20with%20Concourse%20V1%2004-27-2018.docx&action=default&mobileredirect=true)
 for a step-by-step manual deploy using some automation.
-
 
 ## End-to-end PKS Deploy
 
@@ -28,6 +29,7 @@ The overall process for a full PKS deployment is
 Instead, [install Google Repo](https://source.android.com/source/downloading#installing-repo).
 
 Here's a quick google repo install for the impatient.
+
 ```bash
 # Validate python
 python2.7 -c "print 'Python OK'" || echo 'Need python 2.7!'

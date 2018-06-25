@@ -25,7 +25,7 @@ jobs:
   include:
     - stage: test-bootstrap-provision
       script:
-        - ./prep.sh
+        - sudo ./prep.sh
     - stage: test-bootstrap-provision
       script:
         - docker build -t bootstrap -f Dockerfile.testing .
