@@ -1,27 +1,8 @@
-# vmware-pks-deploy
+# vmware-concourse-deploy
 
-[![Build Status](https://travis-ci.org/vmware/vmware-pks-deploy.svg?branch=master)](https://travis-ci.org/vmware/vmware-pks-deploy)
-
-This is a project intended to document and automate the process required for a PKS + NSX-T deployment on vSphere.
-
-Read
-[Niran's step-by-step NSX-T deploy](https://onevmw-my.sharepoint.com/:w:/r/personal/nevenchen_vmware_com/_layouts/15/Doc.aspx?sourcedoc=%7B06F3406E-D0A2-42AE-9F5C-F35583D92EDF%7D&file=Deploy%20NSX-T%20with%20Concourse%20V1%2004-27-2018.docx&action=default&mobileredirect=true)
-for a step-by-step manual deploy using some automation.
-
-## End-to-end PKS Deploy
-
-The overall process for a full PKS deployment is
-
-* Use the PoC [Planning Reference](https://vault.vmware.com/group/vault-main-library/document-preview?fileId=38127906) document to vet the planned deployment
-* Use the [PKS Configuration Worksheet](https://vault.vmware.com/group/vault-main-library/document-preview?fileId=38127882) to identify and track needed configuration
-* Starting with a new vcenter, or a new cluster in an existing vcenter
-* Bootstrap: Deploy a jump box
-  * install concourse
-  * download and host needed binaries
-* Use a default configuration or create a new configuration
-* Apply pipelines + configuration for the following in concourse:
-  * deploy nsx-t
-  * deploy PKS
+This is a project intended to document and automate the process required for a
+complex multi-machine deployment via Concourse (For example, deploying PKS with
+NSX-T) on vSphere.
 
 ## Get the code
 
@@ -48,23 +29,22 @@ Once you've installed Google Repo, you will use it to download and assemble all 
 This process is as follows:
 
 ``` bash
-mkdir pks-deploy-testing
-cd pks-deploy-testing
-repo init -u https://github.com/vmware/vmware-pks-deploy-meta.git
-# or, with ssh: (you will have first had to register an SSH key with Github)
-repo init -u git@github.com:vmware/vmware-pks-deploy-meta.git
-# Then sync, which pulls down the code.
+mkdir concourse-deploy-testing
+cd concourse-deploy-testing
+repo init git@gitlab.eng.vmware.com:vmworld2018/skyway.git
+
+# you will need to enter gitlab credentials here
 repo sync
 ```
 
-After pulling down all the code as described above, go into `pks-deploy-testing`
+After pulling down all the code as described above, go into `concourse-deploy-testing`
 and you'll see there are several directories.  These are each a git repository.
 
-We'll focus on the `pks-deploy` repository.
+We'll focus on the `concourse-deploy` repository.
 
 ## Bootstrapping
 
-Go into `pks-deploy/bootstrap`.
+Go into `concourse-deploy/bootstrap`.
 This directory contains code that will create a VM in vCenter, install Concourse, ansible, and other tools into that VM.
 
 You can use an existing OVA captured after doing this process once, or you can go into the [bootstrap directory](bootstrap/)
@@ -84,7 +64,7 @@ On the jumpbox, there is also a copy of the source you used to bootstrap at `/ho
 
 ### Download VMware bits
 
-Go into the jumpbox directory `/home/vmware/deployroot/pks-deploy/downloads`, and follow the readme there to pull needed bits from http://my.vmware.com.
+Go into the jumpbox directory `/home/vmware/deployroot/concourse-deploy/downloads`, and follow the readme there to pull needed bits from http://my.vmware.com.
 You can see an online version here: [downloads](downloads)
 
 These files will be hosted via nginx after they download at `http://jumpbox-ip`.
@@ -111,7 +91,7 @@ Once you have the config file correct:
 ``` bash
 cd /home/vmware/deployroot/nsx-t-gen
 fly --target main login -c http://localhost:8080 -u vmware -p 'VMware1!'
-fly -t main set-pipeline -p deploy-nsx -c pipelines/nsx-t-install.yml -l ../pks-deploy/one-cloud-nsxt-param.yaml
+fly -t main set-pipeline -p deploy-nsx -c pipelines/nsx-t-install.yml -l ../concourse-deploy/one-cloud-nsxt-param.yaml
 fly -t main unpause-pipeline -p deploy-nsx
 ```
 
@@ -131,7 +111,7 @@ fly -t main unpause-pipeline -p deploy-pks
 
 ## Contributing
 
-The vmware-pks-deploy project team welcomes contributions from the community. Before you start working with vmware-pks-deploy, please read our [Developer Certificate of Origin](https://cla.vmware.com/dco). All contributions to this repository must be signed as described on that page. Your signature certifies that you wrote the patch or have the right to pass it on as an open-source patch. For more detailed information, refer to [CONTRIBUTING.md](CONTRIBUTING.md).
+The vmware-concourse-deploy project team welcomes contributions from the community. Before you start working with vmware-concourse-deploy, please read our [Developer Certificate of Origin](https://cla.vmware.com/dco). All contributions to this repository must be signed as described on that page. Your signature certifies that you wrote the patch or have the right to pass it on as an open-source patch. For more detailed information, refer to [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Development
 
