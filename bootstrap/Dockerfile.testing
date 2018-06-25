@@ -1,0 +1,21 @@
+FROM ubuntu:16.04
+
+ENV GOVC=https://github.com/vmware/govmomi/releases/download/v0.18.0/govc_linux_amd64.gz
+ENV OVA=https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64.ova
+
+RUN apt-get -qq update && apt-get install -y \
+	curl python-pip \
+	sudo
+
+RUN curl -L $GOVC | gunzip > /usr/bin/govc && chmod +x /usr/bin/govc
+COPY . /
+
+# This isn't really needed for purely testing the automation
+# ADD $OVA /bootstrap.ova
+
+WORKDIR provision
+RUN pip install ansible
+RUN ansible-galaxy install -r external_roles.yml
+RUN echo "---" > ~/.ansible/roles/concourse/tasks/kernel_update.yml
+CMD ["site.yml", "-i", "inventory"]
+ENTRYPOINT [ "ansible-playbook" ]

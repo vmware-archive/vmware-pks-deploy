@@ -4,7 +4,7 @@ We want to stand up a simple VM on which to
 
 * run ansible playbooks
 * install and run Concourse
-* download and host binaries to install into vShpere and other VMs
+* download and host binaries to install into vSphere and other VMs
 
 We'll enable standing this VM up, and capturing it as an OFV for a pre-packaged VM
 
@@ -16,9 +16,16 @@ We'll enable standing this VM up, and capturing it as an OFV for a pre-packaged 
   * a vCenter to which this machine can connect
   * ovftool (optional: only needed if you need to capture an OVF after bootstrapping)
 * DHCP for the network the bootstrap VM will be created on
-* a default recource pool into which we will install the bootstrap VM
+* a default resource pool into which we will install the bootstrap VM
 
-## Preperation
+## Preparation
+
+You may be able to run the ```prep.sh``` script to get ready to build the
+bootstrap docker container.
+
+``` bash
+./prep.sh
+```
 
 ### user-data (optional)
 
@@ -48,7 +55,7 @@ We will later use this VM to run the full PKS and NSX-T deploy.  The command bel
 
 There are several parameters you can pass in to this provisioning step:
 
-* `VM_NAME`: this is what the bootstrap VM will be named (default is 'pks-bootstraper')
+* `VM_NAME`: this is what the bootstrap VM will be named (default is 'pks-bootstrapper')
 * `GOVC_NETWORK`: What network the VM should be placed on (default is 'VM Network')
 * `GOVC_PASSWORD`: administrator password
 * `GOVC_INSECURE`: allow skipping SSL verification (default is '1' for true)
@@ -59,6 +66,7 @@ There are several parameters you can pass in to this provisioning step:
 * `GOVC_RESOURCE_POOL`: resource pool in which to place the VM (default is none)
 * `MY_VMWARE_USER`: Username used to log into my.vmware.com when downloading binaries, no default
 * `MY_VMWARE_PASSWORD`: Password used to log into my.vmware.com when downloading bin, no default
+* `PIVNET_API_TOKEN`: API token for network.pivotal.io for downloading binaries, no default
 
 You can edit [docker-env](./docker-env) in this directory to reflect your environment.  This is passed in to the provisioning process in the following command:
 
@@ -77,16 +85,16 @@ After this completes, you should have a VM in the vCenter named after your `$VM_
 
 ## Capture an ovf
 
-You can capture an ovf from the bootstraped VM for future deploys without waiting for the bootstrap procss to download and configure everything.
+You can capture an ovf from the bootstrapped VM for future deploys without waiting for the bootstrap process to download and configure everything.
 
 ``` bash
-govc vm.power -off pks-bootstraper
-govc export.ovf -vm pks-bootstraper .
-ovftool pks-bootstraper/pks-bootstraper.ovf baked-pks-deploy.ova
+govc vm.power -off pks-bootstrapper
+govc export.ovf -vm pks-bootstrapper .
+ovftool pks-bootstrapper/pks-bootstrapper.ovf baked-pks-deploy.ova
 ```
 
 ## Destroy the Bootstrap host
 
 This will power off and remove the VM from vCenter.
 
-`govc vm.destroy pks-bootstraper`
+`govc vm.destroy pks-bootstrapper`

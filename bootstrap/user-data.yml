@@ -5,6 +5,7 @@ bootcmd:
   - echo 'boot cmd execute' >> /etc/cmds
 runcmd:
   - echo "moooo!"
+  - usermod -a -G docker vmware
   - easy_install pip
   - pip install --no-clean ansible
   - echo 'runcmd done' >> /etc/cmds

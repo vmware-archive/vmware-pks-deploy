@@ -27,6 +27,20 @@ The overall process for a full PKS deployment is
 ***Do not clone this repository.***
 Instead, [install Google Repo](https://source.android.com/source/downloading#installing-repo).
 
+Here's a quick google repo install for the impatient.
+```bash
+# Validate python
+python2.7 -c "print 'Python OK'" || echo 'Need python 2.7!'
+python --version | grep "Python 2" || echo 'Warning: python 3 is default!'
+mkdir ~/bin
+PATH=~/bin:$PATH
+curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+chmod a+x ~/bin/repo
+# If you get a warning that about python 3, you might run this:
+# After repo is installed:
+sed -ri "1s:/usr/bin/env python:/usr/bin/python2.7:" ~/bin/repo
+```
+
 Once you've installed Google Repo, you will use it to download and assemble all the component git repositories.
 
 This process is as follows:
@@ -34,8 +48,10 @@ This process is as follows:
 ``` bash
 mkdir pks-deploy-testing
 cd pks-deploy-testing
-repo init -u http://gitlab.eng.vmware.com/ps-emerging/pks-deploy-meta.git
-# you will need to enter gitlab credentials here
+repo init -u https://github.com/vmware/vmware-pks-deploy-meta.git
+# or, with ssh: (you will have first had to register an SSH key with Github)
+repo init -u git@github.com:vmware/vmware-pks-deploy-meta.git
+# Then sync, which pulls down the code.
 repo sync
 ```
 
@@ -44,7 +60,7 @@ and you'll see there are several directories.  These are each a git repository.
 
 We'll focus on the `pks-deploy` repository.
 
-## Bootstraping
+## Bootstrapping
 
 Go into `pks-deploy/bootstrap`.
 This directory contains code that will create a VM in vCenter, install Concourse, ansible, and other tools into that VM.
@@ -76,7 +92,7 @@ These files will be hosted via nginx after they download at `http://jumpbox-ip`.
 ### Apply various pipelines
 
 On the jumpbox, the pipelines exist at `/home/vmware/deployroot` and concourse is running on `http://jumpbox-ip:8080` with the same credentials as ssh to log in.
-You can use fly from the jumpbox to apply the pipelines. To log in try `fly --target main login -c http://localhost:8080`
+You can use fly from the jumpbox to apply the pipelines. To log in try `fly --target main login -c http://localhost:8080` and `fly pipelines --target main`
 
 #### Install NSX-T
 

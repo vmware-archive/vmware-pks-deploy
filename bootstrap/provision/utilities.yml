@@ -1,0 +1,30 @@
+- name: Add some useful command line utilities
+  hosts: bootstrap
+  become: True
+  vars:
+  roles:
+    - { name: "kubectl", tags: "kubectl" }
+  tasks:
+    - name: download pivnet CLI
+      get_url:
+          url: "https://github.com/pivotal-cf/pivnet-cli/releases/download/v0.0.51/pivnet-linux-amd64-0.0.51"
+          dest: /usr/bin/pivnet-cli
+      register: download_pivnet_cli
+      retries: 5
+      delay: 5
+      until: not download_pivnet_cli.failed
+    - name: perms for pivnet cli
+      file:
+        path: /usr/bin/pivnet-cli
+        mode: "+x"
+      when:
+        - download_pivnet_cli.changed
+        - not download_pivnet_cli.failed
+    - name: login to pivnet
+      become: True
+      command: /usr/bin/pivnet-cli login --api-token {{ pivnet_api_token }}
+      when: pivnet_api_token is defined
+    - name: login to pivnet as non-privileged user
+      become: False
+      command: /usr/bin/pivnet-cli login --api-token {{ pivnet_api_token }}
+      when: pivnet_api_token is defined

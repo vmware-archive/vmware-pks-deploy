@@ -5,12 +5,29 @@
   roles:
     - { name: "postgresql", tags: "postgresql" }
     - { name: "concourse", tags: "concourse"  }
-  # tasks:
-  #   - name: copy fly into path
-  #     become: True
-  #     copy:
-  #       src: /opt/concourseci/bin/fly
-  #       dest: /bin/fly
-  #       owner: root
-  #       group: root
-  #       mode: 0755
+  tasks:
+    - name: download concourse CLI
+      become: True
+      get_url:
+          url: "http://localhost:8080/api/v1/cli?arch=amd64&platform=linux"
+          dest: /usr/bin/fly
+      register: download_fly
+      retries: 5
+      delay: 5
+      until: not download_fly.failed
+    - name: perms for fly
+      become: True
+      file:
+        path: /usr/bin/fly
+        mode: "+x"
+      when:
+        - download_fly.changed
+        - not download_fly.failed
+    - name: check iptables is available
+      stat:
+        path: /sbin/iptables
+      register: iptables_stat
+    - name: iptables forward, for Concourse containers
+      become: True
+      command: iptables -I FORWARD -j ACCEPT
+      when: iptables_stat.stat.exists

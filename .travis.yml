@@ -1,0 +1,35 @@
+stages:
+  - lint
+  - name: test-bootstrap-provision
+    if: type IN (push, cron)
+  - name: build-bootstrap
+    if: type IN (push, cron)
+  - name: build-prep
+
+language: python
+
+sudo: required
+
+services:
+  - docker
+
+addons:
+  apt:
+    update: true
+
+before_install:
+  - docker info
+  - cd bootstrap
+
+jobs:
+  include:
+    - stage: test-bootstrap-provision
+      script:
+        - ./prep.sh
+    - stage: test-bootstrap-provision
+      script:
+        - docker build -t bootstrap -f Dockerfile.testing .
+        - docker run bootstrap
+    - stage: build-bootstrap
+      script:
+        - docker build -t vmware/pks-deploy:bootstrap .
