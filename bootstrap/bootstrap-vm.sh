@@ -10,6 +10,7 @@ set -o pipefail
 
 vm="$VM_NAME"
 network="$GOVC_NETWORK"
+bootstrap_name="pks"
 varsfile="../packer/vars/vsphere-template.json"
 destroy=false
 verbose=true
@@ -119,7 +120,7 @@ rsyncopts=(-ra --delete -e 'ssh -i '$keyfile' -o "UserKnownHostsFile /dev/null" 
 
 if [ -n "$MY_VMWARE_USER" ] && [ -n "$MY_VMWARE_PASSWORD" ]; then
   echo "Setup downloader config"
-  echo '{ "username": "'$MY_VMWARE_USER'", "password": "'$MY_VMWARE_PASSWORD'"}' > ${deployroot}/concourse-deploy/downloads/config.json
+  echo '{ "username": "'$MY_VMWARE_USER'", "password": "'$MY_VMWARE_PASSWORD'"}' > ${deployroot}/${bootstrap_name}-deploy/downloads/config.json
 fi
 
 echo -n "Copy code to the jumpbox..."
