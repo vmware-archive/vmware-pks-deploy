@@ -1,5 +1,10 @@
-- name: Create a single node Concourse host
-  hosts: bootstrap
+# Create a single node Concourse host
+- hosts: bootstrap
+  become: True
+  tasks:
+    - name: Install acl
+      apt: pkg=acl state=present
+- hosts: bootstrap
   become: True
   vars:
   roles:
