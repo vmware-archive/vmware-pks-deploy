@@ -23,8 +23,8 @@
     - name: login to pivnet
       become: True
       command: /usr/bin/pivnet-cli login --api-token {{ pivnet_api_token }}
-      when: pivnet_api_token is defined
+      when: pivnet_api_token is defined and pivnet_api_token != ""
     - name: login to pivnet as non-privileged user
       become: False
       command: /usr/bin/pivnet-cli login --api-token {{ pivnet_api_token }}
-      when: pivnet_api_token is defined
+      when: pivnet_api_token is defined and pivnet_api_token != ""
