@@ -83,6 +83,14 @@ docker run -it --env-file docker-env -v $PWD/../..:/deployroot bootstrap
 
 After this completes, you should have a VM in the vCenter named after your `$VM_NAME`.
 
+``` bash
+# Debugging note: you can pass additional arguments to the entrypoint.sh to
+# target an existing VM for more interactive debugging.  
+# -a <address> for existing VM, -u <user>, -d <deployroot>
+# E.g.
+./entrypoint.sh -a concourse-bootstrapper -u gardnerj -d ../../my_deployroot
+```
+
 ## Capture an ovf
 
 You can capture an ovf from the bootstrapped VM for future deploys without waiting for the bootstrap process to download and configure everything.
