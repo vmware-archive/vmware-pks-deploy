@@ -31,7 +31,7 @@ This process is as follows:
 ``` bash
 mkdir concourse-deploy-testing
 cd concourse-deploy-testing
-repo init git@gitlab.eng.vmware.com:vmworld2018/skyway.git
+repo init -u git@gitlab.eng.vmware.com:vmworld2018/skyway.git
 
 # you will need to enter gitlab credentials here
 repo sync
