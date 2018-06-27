@@ -18,6 +18,11 @@ ova=xenial-server-cloudimg-amd64.ova
 user=vmware
 deployroot=/deployroot
 
+# bootstrap vm traits
+cpus="1"
+memory="4096"
+disk="40G"
+
 while getopts d:v:n:a:u:q flag
 do
   case $flag in
@@ -63,12 +68,14 @@ function createvm
   sed -e "s:%%GENERATED_KEY%%:$key\n:" user-data.yml > user-data.edited.yml
   userdata=`base64 user-data.edited.yml`
 
-  echo "Downloading ${ova}..."
   if [ ! -e bootstrap.ova ] ; then
+      echo "Downloading ${ova}..."
       curl https://cloud-images.ubuntu.com/xenial/current/$ova -o bootstrap.ova
 
       # use this to get the json spec for the ova, if it changes
       # govc import.spec $ova > ${ova}.json
+  else
+    echo "${ova} already exists, skipping download"
   fi
 
   vm_path="$(govc find / -type m -name "$vm")"
@@ -78,8 +85,9 @@ function createvm
     jq -n --arg userdata "$userdata" --arg network "$network" -f bootstrap-spec.json > bootstrap-spec.edited.json
     govc import.ova -options=bootstrap-spec.edited.json -name=$vm bootstrap.ova
     govc vm.change -vm $vm -nested-hv-enabled=true
-    govc vm.change -vm $vm -m=4096
-    govc vm.disk.change -vm $vm -size 40G
+    govc vm.change -vm $vm -m=${memory}
+    govc vm.change -vm $vm -c=${cpus}
+    govc vm.disk.change -vm $vm -size ${disk}
     vm_path="$(govc find / -type m -name "$vm")"
   else
     echo "VM ${vm} already exists"
