@@ -14,4 +14,4 @@ export MY_VMWARE_PASSWORD=${MY_VMWARE_PASSWORD:'none'}
 export PIVNET_API_TOKEN=${PIVNET_API_TOKEN:'none'}
 
 
-exec "./bootstrap-vm.sh" $@
+exec "./bootstrap-vm.sh" "-q" $@
