@@ -1,0 +1,64 @@
+---
+- name: Download various binaries
+  hosts: bootstrap
+  become: True
+  tasks:
+    - name: Install pip docker support
+      pip:
+        name: docker
+    - name: Create the downloads bucket
+      file:
+        state: directory
+        path: "{{ download_dir }}/{{ download_bucket }}"
+        owner: "root"
+        group: "{{ minio_group }}"
+        mode: 0775
+    - name: Run download script
+      script: "/deployroot/pks-deploy/downloads/download.sh {{ download_dir }}/{{ download_bucket }}"
+        
+
+    # - name: Download OVFtool
+    #   get_url:
+    #     url: "{{ ovf_zip_url }}"
+    #     dest: "{{ download_dir }}/{{ download_bucket }}/{{ ovf_zip }}"
+    #     owner: "root"
+    #     group: "{{ minio_group }}"
+    #     mode: 0775
+    #     checksum: "{{ ovf_zip_checksum }}"
+    #   register: _download_ovftool
+    #   until: _download_ovftool is succeeded
+    #   retries: 5
+    #   delay: 2
+    # - name: Download my.vmware.com product index
+    #   docker_container:
+    #     name: myvmw-downloader
+    #     image: apnex/myvmw
+    #     state: started
+    #     recreate: yes
+    #     auto_remove: yes
+    #     volumes:
+    #       - "{{ download_dir }}/{{ download_bucket }}:/vmwfiles"
+    # - name: Download my.vmware.com PKS index
+    #   docker_container:
+    #     name: myvmw-downloader
+    #     image: apnex/myvmw
+    #     command: "VMware Pivotal Container Service"
+    #     state: started
+    #     recreate: yes
+    #     auto_remove: yes
+    #     volumes:
+    #       - "{{ download_dir }}/{{ download_bucket }}:/vmwfiles"
+    # - name: Download my.vmware.com NSX binaries
+    #   docker_container:
+    #     name: myvmw-downloader
+    #     image: apnex/myvmw
+    #     command: "get {{ item }}"
+    #     state: started
+    #     recreate: yes
+    #     auto_remove: yes
+    #     volumes:
+    #       - "{{ download_dir }}/{{ download_bucket }}:/vmwfiles"
+    #   with_items:
+    #     - nsx-unified-appliance-2.1.0.0.0.7395503.ova
+    #     - nsx-controller-2.1.0.0.0.7395493.ova
+    #     - nsx-edge-2.1.0.0.0.7395502.ova
