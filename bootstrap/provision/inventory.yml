@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  tasks:
+    - name: add bootstrap box to inventory
+      add_host:
+        name: "{{ bootstrap_box_ip }}"
+        groups:
+          - bootstrap
+          - concourse-web
+          - concourse-worker

@@ -2,13 +2,11 @@ ovf_zip_url: "https://www.dropbox.com/s/n5pepfatetp55q2/VMware-ovftool-4.3.0-794
 ovf_zip: "VMware-ovftool-4.3.0-7948156-lin.x86_64.bundle"
 ovf_zip_md5: "4f6e2afbcf72640cb5863bf3f60d575e"
 
-nginx_sites:
-  default:
-     - listen 80
-     - server_name _
-     - root "/home/vmware/deployroot/pks-deploy/downloads"
-     - autoindex on
-
+download_dir: "/downloads"
+minio_server_datadirs: [ "{{ download_dir }}" ]
+minio_access_key: "vmware"
+minio_secret_key: "VMware1!"
+minio_group: vmware
 
 postgresql_databases:
 - name: concourse
