@@ -10,7 +10,7 @@ set -o pipefail
 
 vm="$VM_NAME"
 network="$GOVC_NETWORK"
-bootstrap_name="pks"
+bootstrap_name=${NAME:='pks'}
 varsfile="../packer/vars/vsphere-template.json"
 destroy=false
 verbose=true
@@ -124,14 +124,26 @@ if [ -n "$MY_VMWARE_USER" ] && [ -n "$MY_VMWARE_PASSWORD" ]; then
 fi
 
 echo -n "Copy code to the jumpbox..."
-rsync "${rsyncopts[@]}" ${deployroot} ${user}@${ip}:
+rsync "${rsyncopts[@]}" ${deployroot}/* ${user}@${ip}:deployroot
 echo "Done"
+
+# Allow additional customizations, anthing extra*.sh in this directory
+for extra in extra*.sh; do
+  [ -e "$extra" ] || continue
+  echo -n "Performing extra host prep $extra..."
+  source "./${extra}"
+  echo "Done"
+done
 
 exvars=(-e pivnet_api_token=$PIVNET_API_TOKEN)
 
 echo "Provision extras in the VM, may run several times to get convergence"
 rsync "${rsyncopts[@]}" provision ${user}@${ip}:
-until ssh -t "${opts[@]}" ${user}@$ip "cd provision; ansible-galaxy install -r external_roles.yml; ansible-playbook  -i inventory ${exvars[@]} site.yml || (sudo shutdown -r +1 && false);" ; do
+ssh -t "${opts[@]}" ${user}@$ip "cd provision; ansible-galaxy install -r external_roles.yml"
+if [ -f "provision/additional_roles.yml" ]; then
+  ssh -t "${opts[@]}" ${user}@$ip "cd provision; ansible-galaxy install -r additional_roles.yml"
+fi
+until ssh -t "${opts[@]}" ${user}@$ip "cd provision; ansible-playbook  -i inventory ${exvars[@]} site.yml || (sudo shutdown -r +1 && false);" ; do
   echo -n "."
   sleep 5
 done
