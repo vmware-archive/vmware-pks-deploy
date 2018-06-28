@@ -1,4 +1,6 @@
 ---
+- import_playbook: inventory.yml
+
 - name: Deploy tools for the bootstrap host
   hosts: bootstrap
   become: True

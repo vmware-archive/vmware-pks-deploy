@@ -67,6 +67,11 @@ keyfile=~/.ssh/id_rsa.${vm}
 opts=(-i $keyfile -o "UserKnownHostsFile /dev/null" -o "StrictHostKeyChecking no" -o "LogLevel=ERROR")
 rsyncopts=(-ra --delete -e 'ssh -i '$keyfile' -o "UserKnownHostsFile /dev/null" -o "StrictHostKeyChecking no" -o "LogLevel=ERROR"')
 
+# ansible extra vars
+export ANSIBLE_HOST_KEY_CHECKING=False
+exvars=(-e pivnet_api_token=$PIVNET_API_TOKEN -e my_vmware_user=$MY_VMWARE_USER -e "my_vmware_password='$MY_VMWARE_PASSWORD'")
+exvars+=(-e ansible_ssh_private_key_file=$keyfile -e ansible_ssh_user=$user)
+
 if [ ! -f $keyfile ]; then
   echo "Optional $keyfile not found."
   echo "Generate and use a temporary key for ssh..."
@@ -139,7 +144,9 @@ if [ -z "$ip" ]; then
   createvm
 fi
 
-echo "Configuring bootstrap box $vm at $ip."
+if [ -z "$ip" ]; then
+  echo "Unable to get the vm's IP.  Unknown error."
+fi
 
 if [ -n "$MY_VMWARE_USER" ] && [ -n "$MY_VMWARE_PASSWORD" ]; then
   echo "Setup downloader config"
@@ -150,14 +157,17 @@ echo -n "Copy code to the bootstrap box..."
 rsync "${rsyncopts[@]}" ${deployroot} ${user}@${ip}:
 echo "Done"
 
-exvars=(-e pivnet_api_token=$PIVNET_API_TOKEN)
+exvars+=("-e" "bootstrap_box_ip=$ip")
 
-echo "Provision extras in the VM. This may run several times to get convergence"
-rsync "${rsyncopts[@]}" provision ${user}@${ip}:
-until ssh -t "${opts[@]}" ${user}@$ip "cd provision; ansible-galaxy install -r external_roles.yml; ansible-playbook -i inventory ${exvars[@]} site.yml || (sudo shutdown -r +1 && false);" ; do
-  echo -n "."
-  sleep 5
+echo "Provisioning bootstrap box $vm at $ip."
+cd provision
+ansible-galaxy install -r external_roles.yml
+
+retry=3
+until [ $retry -le 0 ]; do 
+  $verbose && echo ansible-playbook -i inventory ${exvars[@]} site.yml
+  ansible-playbook -i inventory ${exvars[@]} site.yml && break
+  retry=$(( retry - 1 ))
 done
-echo "Done"
 
 echo "Completed configuration of $vm with IP $ip"
