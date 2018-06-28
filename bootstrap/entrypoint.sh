@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-NAME='pks'
+NAME=${NAME:='pks'}
 if [ -f solution-name ]; then
   NAME=$(cat solution-name)
 fi
