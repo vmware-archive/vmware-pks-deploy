@@ -1,6 +1,11 @@
 #!/bin/sh -e
 
-export VM_NAME=${VM_NAME:='pks-bootstrapper'}
+NAME='pks'
+if [ -f solution-name ]; then
+  NAME=$(cat solution-name)
+fi
+export NAME
+export VM_NAME=${VM_NAME:="${NAME}-bootstrapper"}
 export GOVC_NETWORK=${GOVC_NETWORK:='VM Network'}
 export GOVC_PASSWORD=${GOVC_PASSWORD:='VMware1!'}
 export GOVC_INSECURE=${GOVC_INSECURE:='1'}
