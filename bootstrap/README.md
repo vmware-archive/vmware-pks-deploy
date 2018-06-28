@@ -55,7 +55,8 @@ We will later use this VM to run the full PKS and NSX-T deploy.  The command bel
 
 There are several parameters you can pass in to this provisioning step:
 
-* `VM_NAME`: this is what the bootstrap VM will be named (default is 'pks-bootstrapper')
+* `NAME`: this base name of the deployed thing (default is 'pks', or the contents of a file named `solution-name` in the current directory)
+* `VM_NAME`: this is what the bootstrap VM will be named (default is '$NAME-bootstrapper')
 * `GOVC_NETWORK`: What network the VM should be placed on (default is 'VM Network')
 * `GOVC_PASSWORD`: administrator password
 * `GOVC_INSECURE`: allow skipping SSL verification (default is '1' for true)
@@ -88,22 +89,21 @@ After this completes, you should have a VM in the vCenter named after your `$VM_
 # target an existing VM for more interactive debugging.
 # -a <address> for existing VM, -u <user>, -d <deployroot>
 # E.g.
-./entrypoint.sh -a concourse-bootstrapper -u gardnerj -d ../../my_deployroot
+./entrypoint.sh -a my-bootstrapper -u gardnerj -d ../../my_deployroot
 ```
-
 
 ## Capture an ovf
 
 You can capture an ovf from the bootstrapped VM for future deploys without waiting for the bootstrap process to download and configure everything.
 
 ``` bash
-govc vm.power -off pks-bootstrapper
-govc export.ovf -vm pks-bootstrapper .
-ovftool pks-bootstrapper/pks-bootstrapper.ovf baked-pks-deploy.ova
+govc vm.power -off $NAME-bootstrapper
+govc export.ovf -vm $NAME-bootstrapper .
+ovftool $NAME-bootstrapper/$NAME-bootstrapper.ovf baked-$NAME-deploy.ova
 ```
 
 ## Destroy the Bootstrap host
 
 This will power off and remove the VM from vCenter.
 
-`govc vm.destroy pks-bootstrapper`
+`govc vm.destroy $NAME-bootstrapper`
