@@ -5,7 +5,8 @@
   hosts: bootstrap
   become: True
   roles:
-    - vmware.govc
+    - govc
+    - ovftool
 
 - import_playbook: concourse.yml
 - import_playbook: fileshare.yml
