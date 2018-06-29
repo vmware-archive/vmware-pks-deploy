@@ -8,9 +8,9 @@
 - name: postgresql
   src: ANXS.postgresql
   version: v1.10.1 
-- name: nginx
-  src: jdauphant.nginx
-  version: v2.18.1
 - name: kubectl
   src: andrewrothstein.kubectl
+- name: minio
+  src: https://github.com/atosatto/ansible-minio
+  version: 36eaf8b1c208752f60f18c1e4003e3818bc20622
 

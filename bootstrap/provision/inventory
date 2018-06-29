@@ -1,7 +1,1 @@
-[bootstrap]
-localhost        ansible_connection=local
-
-[concourse-web]
-localhost        ansible_connection=local
-[concourse-worker]
 localhost        ansible_connection=local
