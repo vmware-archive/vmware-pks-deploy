@@ -9,3 +9,4 @@ GOVC_RESOURCE_POOL=resource_pool
 #MY_VMWARE_USER=some_user@vmware.com
 #MY_VMWARE_PASSWORD=super_secret
 #PIVNET_API_TOKEN=super_secret
+VM_NAME=pks-bootstrapper

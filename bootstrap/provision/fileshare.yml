@@ -2,6 +2,14 @@
 - name: Deploy a webserver for hosting binaries
   hosts: bootstrap
   become: True
+  pre_tasks:
+    - name: create the downloads directory
+      file:
+        state: directory
+        path: "{{ download_dir }}"
+        owner: "root"
+        group: "{{ minio_group }}"
+        mode: 0775
   roles:
-    - nginx
-    
+    - minio
+  
