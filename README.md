@@ -84,12 +84,16 @@ On the jumpbox, there is also a copy of the source you used to bootstrap at `/ho
 
 ### Download VMware bits
 
-Go into the jumpbox directory `/home/vmware/deployroot/pks-deploy/downloads`, and follow the readme there to pull needed bits from http://my.vmware.com.
-You can see an online version here: [downloads](downloads)
+If you passed the following variables into the bootstrap process above,
+the required binaries will be downloaded as part of the automation: `PIVNET_API_TOKEN`, `MY_VMWARE_USER`, and `MY_VMWARE_PASSWORD`.
+If you did not pass those in, then you'll need to run this step manually as described below.
 
-These files will be hosted via nginx after they download at `http://jumpbox-ip`.
+Go into the jumpbox directory `/home/vmware/deployroot/pks-deploy/downloads`,
+and follow the readme there to pull needed bits from http://my.vmware.com and pivnet.
+You can see an online version in [downloads](downloads).
 
-**TODO** still need to pull down pivotal files
+The downloaded files will be hosted via s3 by minio and
+can be accessed at `http://bootstrap-box-ip:9091`.
 
 ### Apply various pipelines
 
