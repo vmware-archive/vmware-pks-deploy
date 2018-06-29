@@ -1,0 +1,18 @@
+---
+- name: Download various binaries
+  hosts: bootstrap
+  become: True
+  tasks:
+    - name: Create the downloads bucket
+      file:
+        state: directory
+        path: "{{ download_dir }}/{{ download_bucket }}"
+        owner: "root"
+        group: "{{ minio_group }}"
+        mode: 0775
+    - name: Run download script
+      script: "/deployroot/pks-deploy/downloads/download.sh {{ download_dir }}/{{ download_bucket }}"
+      environment:
+       PIVNET_API_TOKEN: "{{ pivnet_api_token }}"
+       MY_VMWARE_USER: "{{ my_vmware_user }}"
+       MY_VMWARE_PASSWORD: "{{ my_vmware_password }}"

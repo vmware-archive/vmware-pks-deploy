@@ -16,6 +16,7 @@ RUN apt-get -qq update && apt-get install -y \
 	echo 'vmware ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/vmware
 
 COPY . /home/vmware
+RUN chown -R vmware:vmware /home/vmware
 
 # This isn't really needed for purely testing the automation
 # ADD $OVA /bootstrap.ova
@@ -27,5 +28,5 @@ RUN ansible-galaxy install -r external_roles.yml && \
 	ssh-keygen -f ~/.ssh/id_rsa.test -t rsa -N '' && \
 	echo "---" > ~/.ansible/roles/concourse/tasks/kernel_update.yml
 
-CMD ["-vvv", "-e", "ansible_ssh_user=root", "-e", "ansible_ssh_private_key_file=~/.ssh/id_rsa.test", "-e", "bootstrap_box_ip=localhost", "site.yml", "-i", "inventory"]
+CMD ["-vv", "-e", "do_download=false", "-e", "ansible_ssh_user=root", "-e", "ansible_ssh_private_key_file=~/.ssh/id_rsa.test", "-e", "bootstrap_box_ip=localhost", "site.yml", "-i", "inventory"]
 ENTRYPOINT [ "ansible-playbook" ]
