@@ -1,7 +1,11 @@
 # get these roles using ansible-galaxy
 
-- src: vmware.govc
-- src: vmware.ovftool
+- name: govc
+  src: vmware.govc
+- name: ovftool
+  src: vmware.ovftool
+  src: https://github.com/vmware/ansible-role-ovftool
+  version: eula
 - name: concourse
   src: ahelal.concourse
   version: v3.2.2
