@@ -16,6 +16,7 @@ RUN apt-get -qq update && apt-get install -y \
 	echo 'vmware ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/vmware
 
 COPY . /home/vmware
+RUN chown -R vmware:vmware /home/vmware
 
 # This isn't really needed for purely testing the automation
 # ADD $OVA /bootstrap.ova
