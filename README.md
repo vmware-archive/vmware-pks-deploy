@@ -4,24 +4,48 @@
 
 This is a project intended to document and automate the process required for a PKS + NSX-T deployment on vSphere.
 
-Read
+## Extra documents
+
+These documents are not public yet.  They are linked here for VMware internal users, but should be converted over time into publicly consumable documents.
+
+* Read
 [Niran's step-by-step NSX-T deploy](https://onevmw-my.sharepoint.com/:w:/r/personal/nevenchen_vmware_com/_layouts/15/Doc.aspx?sourcedoc=%7B06F3406E-D0A2-42AE-9F5C-F35583D92EDF%7D&file=Deploy%20NSX-T%20with%20Concourse%20V1%2004-27-2018.docx&action=default&mobileredirect=true)
-for a step-by-step manual deploy using some automation.
-
-## End-to-end PKS Deploy
-
-The overall process for a full PKS deployment is
-
+for a step-by-step manual deploy using some automation
 * Use the PoC [Planning Reference](https://vault.vmware.com/group/vault-main-library/document-preview?fileId=38127906) document to vet the planned deployment
-* Use the [PKS Configuration Worksheet](https://vault.vmware.com/group/vault-main-library/document-preview?fileId=38127882) to identify and track needed configuration
-* Starting with a new vcenter, or a new cluster in an existing vcenter
-* Bootstrap: Deploy a jump box
+* Use the [PKS Configuration Worksheet](https://vault.vmware.com/group/vault-main-library/document-preview?fileId=38127882) to identify and track needed configuration that must be captured as YAML for the pipelines to work properly
+
+## High level end-to-end PKS deploment
+
+The overall process for a PKS and NSX-T deployment is
+
+* Start with a new vcenter, or a new cluster in an existing vcenter
+* Deploy a PKS deployment server. This has Pivotal Concourse for running pipelines, and all the needed binaries and tools to do an automated deploy of PKS and NSX-T
+* Use a default configuration YAML or create a new one for NSX-T and another for PKS. These describe what the final deployment will look like
+* Apply the pipelines to your configuration
+* Connect to the Concourse UI
+* Trigger pipelines to:
+  * deploy NSX-T
+  * deploy PKS
+
+To get the inital OVA, you must bootstrap.  That process looks is:
+
+* Start with a machine with access to a vCenter
+* Download this code as described below
+* Create a container with tools needed to operate on vCenter
+* Deploy a ubuntu 16.04 cloud image into vCenter
+* Boot the stock VM using cloudinit to set usernames/passwords/ssh keys
+* Run ansible playbooks against the VM to provision everything needed to make a deploy server, including:
   * install concourse
   * download and host needed binaries
-* Use a default configuration or create a new configuration
-* Apply pipelines + configuration for the following in concourse:
-  * deploy nsx-t
-  * deploy PKS
+  * host container images needed by concourse
+
+
+At this point, you have two choices:
+
+* export the VM as an OVA for a future deployment
+* use the running VM to perform  a deploy now
+
+Assuming you want to do these things, continue into the details of this process below:
 
 ## Get the code
 
@@ -132,7 +156,6 @@ fly -t main set-pipeline -p deploy-pks -c pipelines/install-pks-pipeline.yml -l 
 fly -t main unpause-pipeline -p deploy-pks
 ```
 
-
 ## Contributing
 
 The vmware-pks-deploy project team welcomes contributions from the community. Before you start working with vmware-pks-deploy, please read our [Developer Certificate of Origin](https://cla.vmware.com/dco). All contributions to this repository must be signed as described on that page. Your signature certifies that you wrote the patch or have the right to pass it on as an open-source patch. For more detailed information, refer to [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -146,4 +169,5 @@ You can get the full set of repositories by follow the prep section above.
 ## License
 
 Copyright © 2018 VMware, Inc. All Rights Reserved.
+
 SPDX-License-Identifier: MIT
