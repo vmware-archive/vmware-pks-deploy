@@ -70,7 +70,7 @@ rsyncopts=(-ra --delete -e 'ssh -i '$keyfile' -o "UserKnownHostsFile /dev/null" 
 # ansible extra vars
 export ANSIBLE_HOST_KEY_CHECKING=False
 exvars=(-e pivnet_api_token=$PIVNET_API_TOKEN -e my_vmware_user=$MY_VMWARE_USER -e "my_vmware_password='$MY_VMWARE_PASSWORD'")
-exvars+=(-e ansible_ssh_private_key_file=$keyfile -e ansible_ssh_user=$user)
+exvars+=(-e ansible_ssh_private_key_file=$keyfile -e ansible_ssh_user=$user -e do_download=true)
 
 if [ ! -f $keyfile ]; then
   echo "Optional $keyfile not found."
@@ -133,7 +133,7 @@ function createvm
   echo "Got ip $ip"
 
   echo -n "Wait until cloud-init finishes"
-  until ssh "${opts[@]}" vmware@$ip "grep 'runcmd done' /etc/cmds"; do
+  until ssh "${opts[@]}" vmware@$ip "grep -q 'runcmd done' /etc/cmds"; do
     echo -n "."
     sleep 5
   done
@@ -148,13 +148,8 @@ if [ -z "$ip" ]; then
   echo "Unable to get the vm's IP.  Unknown error."
 fi
 
-if [ -n "$MY_VMWARE_USER" ] && [ -n "$MY_VMWARE_PASSWORD" ]; then
-  echo "Setup downloader config"
-  echo '{ "username": "'$MY_VMWARE_USER'", "password": "'$MY_VMWARE_PASSWORD'"}' > ${deployroot}/${bootstrap_name}-deploy/downloads/config.json
-fi
-
 echo -n "Copy code to the bootstrap box..."
-rsync "${rsyncopts[@]}" ${deployroot} ${user}@${ip}:
+rsync "${rsyncopts[@]}" ${deployroot}/* ${user}@${ip}:deployroot
 echo "Done"
 
 exvars+=("-e" "bootstrap_box_ip=$ip")

@@ -68,6 +68,9 @@ There are several parameters you can pass in to this provisioning step:
 * `MY_VMWARE_PASSWORD`: Password used to log into my.vmware.com when downloading bin, no default
 * `PIVNET_API_TOKEN`: API token for network.pivotal.io for downloading binaries, no default
 
+Setting `PIVNET_API_TOKEN`, `MY_VMWARE_USER`, and `MY_VMWARE_PASSWORD` will enable automatic downloading of binaries
+from my.vmware.com and pivnet.
+
 You can edit [docker-env](./docker-env) in this directory to reflect your environment.  This is passed in to the provisioning process in the following command:
 
 ``` bash
