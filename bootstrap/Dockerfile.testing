@@ -16,6 +16,12 @@ COPY . /
 WORKDIR provision
 RUN pip install ansible
 RUN ansible-galaxy install -r external_roles.yml
+# kernel update doesn't work in CI, requires reboot
 RUN echo "---" > ~/.ansible/roles/concourse/tasks/kernel_update.yml
+# Update version of concourse.
+RUN mkdir -p group_vars/all
+RUN echo "concourseci_version: \"v3.9.0\"" >> group_vars/all/vars.yml
+# Workaround issue with wget and new user under docker
+RUN sed -i.bak "s/{{ concourseci_user }}/root/" ~/.ansible/roles/concourse/tasks/install_nix.yml
 CMD ["site.yml", "-i", "inventory"]
 ENTRYPOINT [ "ansible-playbook" ]
