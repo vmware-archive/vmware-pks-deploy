@@ -10,7 +10,7 @@ set -o pipefail
 
 vm="$VM_NAME"
 network="$GOVC_NETWORK"
-bootstrap_name="pks"
+bootstrap_name=${NAME:='pks'}
 varsfile="../packer/vars/vsphere-template.json"
 destroy=false
 verbose=true
@@ -151,6 +151,14 @@ fi
 echo -n "Copy code to the bootstrap box..."
 rsync "${rsyncopts[@]}" ${deployroot}/* ${user}@${ip}:deployroot
 echo "Done"
+
+# Allow additional customizations, anthing extra*.sh in this directory
+for extra in extra*.sh; do
+  [ -e "$extra" ] || continue
+  echo -n "Performing extra host prep $extra..."
+  source "./${extra}"
+  echo "Done"
+done
 
 exvars+=("-e" "bootstrap_box_ip=$ip")
 
