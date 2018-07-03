@@ -152,7 +152,15 @@ echo -n "Copy code to the bootstrap box..."
 rsync "${rsyncopts[@]}" ${deployroot}/* ${user}@${ip}:deployroot
 echo "Done"
 
-exvars+=("-e" "bootstrap_box_ip=$ip")
+# Allow additional customizations, anthing extra*.sh in this directory
+for extra in extra*.sh; do
+  [ -e "$extra" ] || continue
+  echo -n "Performing extra host prep $extra..."
+  source "./${extra}"
+  echo "Done"
+done
+
+exvars+=(-e bootstrap_box_ip=${ip} -e deploy_user=${user} -e solution_name=${bootstrap_name})
 
 echo "Provisioning bootstrap box $vm at $ip."
 cd provision
