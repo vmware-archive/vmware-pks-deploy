@@ -20,4 +20,3 @@ These are all the things we must have to be able to do an NSX-T/PKS automated de
   * pivnet CLI
   * ovftool
   * govc
-  

@@ -82,7 +82,7 @@ function createvm
 {
   echo "Creating a VM \"$vm\" to serve as bootstrap box."
 
-  if [ "$verbose" == "true" ] ; then 
+  if [ "$verbose" == "true" ] ; then
     echo "Ok to continue (ctl-c to quit)?"
     read answer
   fi
@@ -152,14 +152,6 @@ echo -n "Copy code to the bootstrap box..."
 rsync "${rsyncopts[@]}" ${deployroot}/* ${user}@${ip}:deployroot
 echo "Done"
 
-# Allow additional customizations, anthing extra*.sh in this directory
-for extra in extra*.sh; do
-  [ -e "$extra" ] || continue
-  echo -n "Performing extra host prep $extra..."
-  source "./${extra}"
-  echo "Done"
-done
-
 exvars+=("-e" "bootstrap_box_ip=$ip")
 
 echo "Provisioning bootstrap box $vm at $ip."
@@ -167,7 +159,7 @@ cd provision
 ansible-galaxy install -r external_roles.yml
 
 retry=3
-until [ $retry -le 0 ]; do 
+until [ $retry -le 0 ]; do
   $verbose && echo ansible-playbook -i inventory ${exvars[@]} site.yml
   ansible-playbook -i inventory ${exvars[@]} site.yml && break
   retry=$(( retry - 1 ))
