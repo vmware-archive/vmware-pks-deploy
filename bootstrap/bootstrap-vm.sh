@@ -10,7 +10,7 @@ set -o pipefail
 
 vm="$VM_NAME"
 network="$GOVC_NETWORK"
-bootstrap_name="pks"
+bootstrap_name=${NAME:='pks'}
 varsfile="../packer/vars/vsphere-template.json"
 destroy=false
 verbose=true
