@@ -12,7 +12,7 @@ RUN apt-get -qq update && apt-get install -y \
 		sudo && \
     curl -L $GOVC | gunzip > /usr/bin/govc && chmod +x /usr/bin/govc && \
 	useradd -ms /bin/bash vmware && \
-	pip install ansible==2.5.5 && \
+	pip install 'ansible<2.6' && \
 	echo 'vmware ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/vmware
 
 COPY . /home/vmware

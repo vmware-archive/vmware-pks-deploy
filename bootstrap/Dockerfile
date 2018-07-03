@@ -9,9 +9,10 @@ ENV OVA=https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-am
 
 RUN apk update && apk add --virtual build-dependencies curl git bash jq openssh rsync py-pip python python-dev libffi-dev openssl-dev build-base && \
     pip install --upgrade pip && \
-    pip install ansible && \
+    pip install 'ansible<2.6' && \
     curl -L $OVA -o /bootstrap.ova && \
     curl -L $GOVC | gunzip > /usr/bin/govc && chmod +x /usr/bin/govc
+
 COPY . /
 
 ENTRYPOINT [ "/entrypoint.sh" ]
