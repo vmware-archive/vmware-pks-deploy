@@ -6,4 +6,5 @@ downloads/config.json
 downloads/files.json
 downloads/index.json
 downloads/product.json
+solution-name
 *.retry
