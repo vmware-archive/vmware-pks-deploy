@@ -160,7 +160,8 @@ for extra in extra*.sh; do
   echo "Done"
 done
 
-exvars+=("-e" "bootstrap_box_ip=$ip")
+exvars+=(-e bootstrap_box_ip=${ip} -e solution_name=${bootstrap_name})
+exvars+=(-e deploy_user=${user} -e minio_group=${user})
 
 echo "Provisioning bootstrap box $vm at $ip."
 cd provision
