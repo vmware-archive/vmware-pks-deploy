@@ -82,7 +82,7 @@ function createvm
 {
   echo "Creating a VM \"$vm\" to serve as bootstrap box."
 
-  if [ "$verbose" == "true" ] ; then 
+  if [ "$verbose" == "true" ] ; then
     echo "Ok to continue (ctl-c to quit)?"
     read answer
   fi
@@ -160,14 +160,14 @@ for extra in extra*.sh; do
   echo "Done"
 done
 
-exvars+=("-e" "bootstrap_box_ip=$ip")
+exvars+=(-e bootstrap_box_ip=${ip} -e deploy_user=${user} -e solution_name=${bootstrap_name})
 
 echo "Provisioning bootstrap box $vm at $ip."
 cd provision
 ansible-galaxy install -r external_roles.yml
 
 retry=3
-until [ $retry -le 0 ]; do 
+until [ $retry -le 0 ]; do
   $verbose && echo ansible-playbook -i inventory ${exvars[@]} site.yml
   ansible-playbook -i inventory ${exvars[@]} site.yml && break
   retry=$(( retry - 1 ))

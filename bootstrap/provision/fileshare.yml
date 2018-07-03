@@ -12,4 +12,3 @@
         mode: 0775
   roles:
     - minio
-  
