@@ -28,5 +28,9 @@ RUN ansible-galaxy install -r external_roles.yml && \
 	ssh-keygen -f ~/.ssh/id_rsa.test -t rsa -N '' && \
 	echo "---" > ~/.ansible/roles/concourse/tasks/kernel_update.yml
 
-CMD ["-vv", "-e", "do_download=false", "-e", "ansible_ssh_user=root", "-e", "ansible_ssh_private_key_file=~/.ssh/id_rsa.test", "-e", "bootstrap_box_ip=localhost", "site.yml", "-i", "inventory"]
+CMD ["-vv", "-e", "do_download=false", "-e", "ansible_ssh_user=root", \
+"-e", "ansible_ssh_private_key_file=~/.ssh/id_rsa.test", \
+"-e", "bootstrap_box_ip=localhost", \
+"-e", "deploy_user=vmware", \
+"site.yml", "-i", "inventory"]
 ENTRYPOINT [ "ansible-playbook" ]
