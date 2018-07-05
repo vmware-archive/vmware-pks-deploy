@@ -36,3 +36,27 @@
       become: True
       command: iptables -I FORWARD -j ACCEPT
       when: iptables_stat.stat.exists
+# Deploy automation to repload the pipelines on change.
+    - name: Copy automation to reload pipelines
+      become: True
+      copy:
+        src: refly
+        dest: /home/{{ deploy_user }}
+        owner: "{{ deploy_user }}"
+    - name: Need cron
+      apt: pkg=cron state=present
+    - name: Debug
+      debug: msg="concourse_web_options.CONCOURSE_BASIC_AUTH_USERNAME {{ concourse_web_options.CONCOURSE_BASIC_AUTH_USERNAME }}"
+    - name: Save vars to future runs
+      template:
+        src: refly/templates/extra_vars.yml.j2
+        dest: /home/{{ deploy_user }}/refly/extra_vars.yml
+    - name: Setup cron job
+      become: True
+      cron:
+        name: "Refly Concourse Pipelines"
+        minute: "*/2"
+        job: >-
+          cd $HOME/refly &&
+          ansible-playbook -i inventory site.yml -e "@extra_vars.yml"
+        user: "{{ deploy_user }}"

@@ -1,0 +1,26 @@
+---
+- name: Continuously refresh the concourse pipelines
+  hosts: concourse-web
+  become: False
+  tasks:
+    - name: Set default pipelines directory
+      set_fact: pipelines_home="{{ ansible_env.HOME }}/deployroot/pipelines"
+
+    - name: Check for pipelines
+      stat: path="{{ pipelines_home }}"
+      register: pipelines_stat
+
+    - name: Get all pipelines
+      stat:
+        path: "{{ item }}"
+        follow: True
+      register: all_pipelines_stats
+      with_fileglob: "{{ pipelines_home }}/*.yml"
+      when: pipelines_stat.stat.exists
+
+    - name: Iterate over pipelines
+      include_tasks: pipeline.yml
+      loop: "{{ all_pipelines_stats.results|map(attribute='stat')|list }}"
+      loop_control:
+        loop_var: pipeline_stat
+      when: all_pipelines_stats.results is defined
