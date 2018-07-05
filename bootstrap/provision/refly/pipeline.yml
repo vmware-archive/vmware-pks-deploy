@@ -1,0 +1,105 @@
+# Examine and load or reload a potential pipeline
+---
+- name: debug
+  debug:
+    msg: "Checking pipeline {{ pipeline_stat.path | basename }} for freshness"
+
+- name: Check for existing pipeline checksum
+  stat:
+    path: "/tmp/{{ pipeline_stat.path | basename }}.checksum"
+  register: pipelines_checksum_stat
+
+# handle an existing pipeline checksum
+- block:
+    - name: Read pipeline checksum
+      command: cat "/tmp/{{ pipeline_stat.path | basename }}.checksum"
+      register: previous_checksum
+
+    - name: Set pipelines checksum
+      set_fact: previous_checksum="{{ previous_checksum.stdout }}"
+
+  when: pipelines_checksum_stat.stat.exists
+
+- name: Write to pipeline checksum
+  copy:
+    content: "{{ pipeline_stat.checksum }}"
+    dest: "/tmp/{{ pipeline_stat.path | basename }}.checksum"
+  when: not pipelines_checksum_stat.stat.exists or
+        (pipelines_checksum_stat.stat.exists and
+         previous_checksum != pipeline_stat.checksum)
+  register: updated_file
+
+- name: Super simple check for whether the file is a pipeline definition
+  shell: cat "{{ pipeline_stat.path }}" | grep -e "^jobs:$"
+  when:
+    - updated_file.changed
+  register: have_pipeline
+  failed_when: have_pipeline.rc > 1 or have_pipeline.rc < 0
+
+# If we don't have a pipeline, expect that this is a params file.
+# The convention is {pipeline}-params.yml
+- block:
+    - name: Set expected pipeline name from params file
+      set_fact:
+        expected_pipeline: >-
+          {{ pipeline_stat.path |
+             regex_replace('^(.*)-params.yml$', '\1.yml') }}
+    - name: Check for expected pipeline by computed name
+      stat:
+        path: "{{ expected_pipeline }}"
+      register: now_have_pipeline
+    - name: Now we have the pipeline we need
+      set_fact:
+        pipeline_def: "{{ expected_pipeline }}"
+      when: now_have_pipeline is defined and now_have_pipeline.stat.exists
+    - name: Now we have the params we need
+      set_fact:
+        pipeline_params: "{{ pipeline_stat.path }}"
+  when: have_pipeline.changed and have_pipeline.rc > 0 and updated_file.changed
+
+# If we do have a pipeline, look for the matching params file.
+# The convention is {pipeline}-params.yml
+- block:
+    - name: Set the pipeline name
+      set_fact:
+        pipeline_def: "{{ pipeline_stat.path }}"
+    - name: Set expected params file from pipeline name
+      set_fact:
+        expected_params: >-
+          {{ pipeline_stat.path |
+             regex_replace('^(.*).yml$', '\1-params.yml') }}
+    - name: Check for expected params by computed name
+      stat:
+        path: "{{ expected_params }}"
+      register: now_have_params
+    - name: Now we have the params we need
+      set_fact:
+        pipeline_params: "{{ expected_params }}"
+      when: now_have_params is defined and now_have_params.stat.exists
+    - name: Now we have the pipeline we need
+      set_fact:
+        pipeline_def: "{{ pipeline_stat.path }}"
+  when: have_pipeline.changed and have_pipeline.rc == 0 and updated_file.changed
+
+- name: Rerun fly command
+  block:
+    - debug:
+        msg: "RELOAD PIPELINE {{ pipeline_def }} with params {{ pipeline_params }}"
+    - name: Login to concourse
+      command: >
+        fly --target main login -c http://{{ concourse_host }}:8080
+        -u {{ concourse_web_user }} -p '{{ concourse_web_password }}'
+    - name: Upload pipeline definition
+      command: >
+        fly -t main set-pipeline -n
+        -p {{ (pipeline_def | basename | splitext)[0] }}
+        -c {{ pipeline_def }}
+        -l {{ pipeline_params }}
+    - name: Unpause pipeline
+      command: >
+        fly -t main unpause-pipeline
+        -p {{ (pipeline_def | basename | splitext)[0] }}
+  when:
+    - have_pipeline.changed
+    - pipeline_def is defined
+    - pipeline_params is defined

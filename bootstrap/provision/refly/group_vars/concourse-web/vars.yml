@@ -1,0 +1,3 @@
+concourse_host: localhost
+councourse_web_user: vmware
+councourse_web_password: PASSED_IN_AS_EXVARS
