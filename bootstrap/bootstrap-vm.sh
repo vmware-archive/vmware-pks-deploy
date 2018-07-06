@@ -53,7 +53,7 @@ do
       ;;
     q)
       # disable verbose output, don't prompt for input
-      verbose=false
+      unset verbose
       ;;
     *)
       echo "unknown option" 1>&2
@@ -82,7 +82,7 @@ function createvm
 {
   echo "Creating a VM \"$vm\" to serve as bootstrap box."
 
-  if [ "$verbose" == "true" ] ; then 
+  if [ "$verbose" == "true" ] ; then
     echo "Ok to continue (ctl-c to quit)?"
     read answer
   fi
@@ -166,11 +166,16 @@ exvars+=(-e deploy_user=${user} -e minio_group=${user})
 echo "Provisioning bootstrap box $vm at $ip."
 cd provision
 ansible-galaxy install -r external_roles.yml
+if [ -f "additional_roles.yml" ]; then
+  ansible-galaxy install -r additional_roles.yml
+fi
 
 retry=3
-until [ $retry -le 0 ]; do 
-  $verbose && echo ansible-playbook -i inventory ${exvars[@]} site.yml
-  ansible-playbook -i inventory ${exvars[@]} site.yml && break
+until [ $retry -le 0 ]; do
+  vees=""
+  [ $verbose ] && vees="-vv"
+  [ $verbose ] && echo ansible-playbook -i inventory ${exvars[@]} site.yml $vees
+  ansible-playbook -i inventory ${exvars[@]} site.yml $vees && break
   retry=$(( retry - 1 ))
 done
 
