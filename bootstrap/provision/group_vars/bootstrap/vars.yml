@@ -7,6 +7,8 @@ ovf_zip_checksum: "sha256:d327c8c7ebaac7432a589b1207410889d00c1ffd3fe18fa751b144
 do_download: false
 download_dir: "/downloads"
 download_bucket: "pks"
+deploy_user: "vmware"
+deployroot: "/deployroot"
 
 minio_server_datadirs: [ "{{ download_dir }}" ]
 minio_access_key: "vmware"

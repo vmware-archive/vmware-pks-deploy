@@ -23,9 +23,26 @@ cpus="1"
 memory="4096"
 disk="40G"
 
-while getopts d:v:n:a:u:q flag
+function usage {
+  echo "usage: $0 [-qh] [-d deployroot] [-a address] [-u user]"
+  echo "  -a address     address of hostname of bootstrap box (VM won't be created)"
+  echo "  -d deployroot  base directory to copy to the bootstrap box"
+  echo "  -n network     network to which to connect the boostrap box"
+  echo "  -u user        user to connect to the bootstrap box"
+  echo "  -v vmname      name to assign to the VM"
+  echo "  -c             copy files only, no provision (for refreshing pipeline)"
+  echo "  -h             display help"
+  echo "  -q             quiet mode, less output and no prompting"
+  exit 1
+}
+
+while getopts :d:v:n:a:u:qch flag
 do
   case $flag in
+    c)
+      # Only copy files, no provision.
+      copyonly=true
+      ;;
     d)
       # root directory of files to be coppied into the bootstrap box
       deployroot=$OPTARG
@@ -55,8 +72,13 @@ do
       # disable verbose output, don't prompt for input
       unset verbose
       ;;
-    *)
-      echo "unknown option" 1>&2
+    h)
+      usage
+      exit 0
+      ;;
+    \? )
+      echo "Unexpected argument."
+      usage
       exit 1
       ;;
   esac
@@ -160,8 +182,14 @@ for extra in extra*.sh; do
   echo "Done"
 done
 
+if [ $copyonly ]; then
+  [ -z ${verbose+x} ] && echo "Skipping provision steps, all done."
+  exit 0
+fi
+
 exvars+=(-e bootstrap_box_ip=${ip} -e solution_name=${bootstrap_name})
 exvars+=(-e deploy_user=${user} -e minio_group=${user})
+exvars+=(-e deployroot=${deployroot})
 
 echo "Provisioning bootstrap box $vm at $ip."
 cd provision
