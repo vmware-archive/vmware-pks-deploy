@@ -13,4 +13,4 @@
 - import_playbook: utilities.yml
 
 - import_playbook: download.yml
-  when: do_download is defined and do_download == true
+  when: do_download is defined and do_download
