@@ -9,6 +9,7 @@ download_dir: "/downloads"
 download_bucket: "pks"
 deploy_user: "vmware"
 deployroot: "/deployroot"
+solution_name: "pks"
 
 minio_server_datadirs: [ "{{ download_dir }}" ]
 minio_access_key: "vmware"
