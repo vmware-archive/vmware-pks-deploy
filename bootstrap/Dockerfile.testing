@@ -21,6 +21,7 @@ RUN chown -R vmware:vmware /home/vmware
 # This isn't really needed for purely testing the automation
 # ADD $OVA /bootstrap.ova
 
+RUN mkdir -p /deployroot
 WORKDIR /home/vmware/provision
 USER vmware
 
