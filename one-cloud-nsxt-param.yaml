@@ -1,43 +1,48 @@
 enable_ansible_debug: false # set value to true for verbose output from ansible
+nsx_t_installer: nsx-t-gen  # Set to name of installer or env or any value so resources can be identified
 
 # vCenter details to deploy the Mgmt OVAs (Mgr, Edge, Controller)
-vcenter_host: 192.168.110.22       # EDIT - this is for deployment of the ovas for the                                                                                           mgmt plane
-vcenter_usr: administrator@corp.local  # EDIT - this is for deployment of the ovas for                                                                                           the mgmt plane
-vcenter_pwd: VMware1!               # EDIT - this is for deployment of the ovas for the                                                                                           mgmt plane
-vcenter_datacenter: RegionA01            # EDIT
-vcenter_datastore: RegionA01-ISCSI01-COMP01              # EDIT
-vcenter_cluster: RegionA01-MGMT                  # EDIT
-vcenter_manager: vcenter-1                # EDIT
+vcenter_host: 192.168.110.22                # EDIT - this is for deployment of the ovas for the mgmt plane
+vcenter_usr: administrator@corp.local       # EDIT - this is for deployment of the ovas for the mgmt plane
+vcenter_pwd: EDIT_ME                       # EDIT - this is for deployment of the ovas for the mgmt plane
+vcenter_datacenter: RegionA01               # EDIT
+vcenter_datastore: RegionA01-ISCSI01-COMP01 # EDIT
+vcenter_cluster: RegionA01-MGMT             # EDIT
+vcenter_manager: vcenter-1                  # EDIT
+vcenter_rp: PKS_pool                        # EDIT resource pool where mgmt VMs would be deployed
+
 
 # OVA general network settings
-ntpservers: time.vmware.com                    # EDIT
-mgmt_portgroup: 'ESXi-RegionA01-vDS-COMP'              # EDIT
-dnsserver: 192.168.110.10                     # EDIT
-dnsdomain: corp.local                  # EDIT
-defaultgateway: 192.168.110.1                # EDIT
+ntpservers: time.vmware.com               # EDIT
+mgmt_portgroup: 'ESXi-RegionA01-vDS-COMP' # EDIT
+dnsserver: 192.168.110.10                 # EDIT
+dnsdomain: corp.local                     # EDIT
+defaultgateway: 192.168.110.1             # EDIT
 netmask: 255.255.255.0                    # EDIT
+
+# Host a Webserver to serve the ova images and ovftool
+# Please edit the endpoint and the file names
+nsx_image_webserver: http://minio.corp.local:9091/pks
 
 # Download NSX-T 2.1 bits from
 # https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-210&productId=673
-# Host a Webserver to serve the ova images and ovftool
-# Please edit the endpoint and the file names
-nsx_image_webserver: http://192.168.100.120
 nsx_mgr_ova: nsx-unified-appliance-2.1.0.0.0.7395503.ova
 nsx_controller_ova: nsx-controller-2.1.0.0.0.7395493.ova
 nsx_edge_ova: nsx-edge-2.1.0.0.0.7395502.ova
-ovftool_image: VMware-ovftool-4.2.0-5965791-lin.x86_64.bundle
+# Ensure ovftool is minimally v4.2
+# https://my.vmware.com/group/vmware/details?productId=614&downloadGroup=OVFTOOL420#
+ovftool_image: VMware-ovftool-4.3.0-7948156-lin.x86_64.bundle
 
 # The Esxi Hosts can be added to transport nodes in two ways:
 # a) specify the esxi hosts individually - first checked for
-# b) or use compute_vcenter_manager to add hosts under a specific vcenter as transport                                                                                           nodes
+# b) or use compute_vcenter_manager to add hosts under a specific vcenter as transport nodes
 
 # Specify passwd of the esxi hosts that should be used for nsx-t
-esxi_hosts_root_pwd: VMware1!  # EDIT - Root password for the esxi hosts
+esxi_hosts_root_pwd: EDIT_ME               # EDIT - Root password for the esxi hosts
 
-# Specify FQDN, ip (and passwd if they are different) for each of the esxi hosts that s                                                                                          hould be used for nsx-t
+# Specify FQDN, ip (and passwd if they are different) for each of the esxi hosts that should be used for nsx-t
 esxi_hosts_config: 
- 
-# esxi_hosts:
+#  esxi_hosts:
 #  - name: esxi-host1.corp.local.io
 #    ip: 10.13.12.10
 #    root_pwd: rootPasswd
@@ -45,39 +50,124 @@ esxi_hosts_config:
 #   ip: 10.13.12.11
 #   root_pwd: rootPasswd
 
-# Using compute manager to specify esxi hosts
-# If filled, then comment off the esxi_hosts_config
-compute_vcenter_manager: vcenter-01               # If filled, then comment off the esx                                                                                          i_hosts_config
-compute_vcenter_host: 192.168.110.22       # for addition of Compute vCenter Esxi hosts                                                                                           as transport node
-compute_vcenter_usr: administrator@corp.local  # for addition of Compute vCenter Esxi h                                                                                          osts as transport node
-compute_vcenter_pwd: VMware1!               # for addition of Compute vCenter Esxi host                                                                                          s as transport node
-compute_vcenter_cluster: RegionA01-K8s                  # for addition of Compute vCent                                                                                          er Esxi hosts as transport node
+# Using a separate compute manager to specify esxi hosts
+# If filled, then change the the esxi_hosts_config section to be empty
+# Sample empty config:
+# esxi_hosts_config: # Provide space after colon
+# compute_vcenter_manager:   # EDIT - Name for vCenter; If filled, then comment off the esxi_hosts_config
+# compute_vcenter_host:      # EDIT - Use Compute vCenter Esxi hosts as transport node
+# compute_vcenter_usr:       # EDIT -  Use Compute vCenter Esxi hosts as transport node
+# compute_vcenter_pwd:       # EDIT - Use Compute vCenter Esxi hosts as transport node
+# compute_vcenter_cluster:   # EDIT - Use Compute vCenter Esxi hosts as transport node
 
+# Handle multiple vcenter and compute clusters
+compute_manager_configs: |
+  compute_managers:
+  - vcenter_name: vcsa-01a 
+    vcenter_host: vcsa-01a.corp.local
+    vcenter_usr: administrator@vsphere.local
+    vcenter_pwd: VMWare1!
+    clusters:
+    # Multiple clusters under same vcenter can be specified
+    - vcenter_cluster: RegionA01-K8s
+      overlay_profile_mtu: 1600 # Min 1600
+      overlay_profile_vlan: 0 # VLAN ID for the TEP/Overlay network
+      # Specify an unused vmnic on esxi host to be used for nsx-t
+      # can be multiple vmnics separated by comma
+      uplink_vmnics: vmnic1 # vmnic1,vmnic2...
+    # - vcenter_cluster: Cluster2
+    #   overlay_profile_mtu: 1600 # Min 1600
+    #   overlay_profile_vlan: EDIT_ME # VLAN ID for the TEP/Overlay network
+    #   # Specify an unused vmnic on esxi host to be used for nsx-t
+    #   # can be multiple vmnics separated by comma
+    #   uplink_vmnics: vmnic1 # vmnic1,vmnic2...
+  # Multiple vcenters can be specified
+  # - vcenter_name: vcenter-02
+  #   vcenter_host: vcenter-02.corp.local
+  #   vcenter_usr: administrator@vsphere.local
+  #   vcenter_pwd: VMWare2!
+  #   clusters:
+  #   - vcenter_cluster: Cluster4
+  #     overlay_profile_mtu: 1600 # Min 1600
+  #     overlay_profile_vlan: EDIT_ME # VLAN ID for the TEP/Overlay network
+  #     # Specify an unused vmnic on esxi host to be used for nsx-t
+  #     # can be multiple vmnics separated by comma
+  #     uplink_vmnics: vmnic1 # vmnic1,vmnic2...
 
+# Using a separate vCenter to add Edges
+# Edge Specific vCenter settings
+# If Edges are going to use the same vCenter as Mgr, then dont set any of the following properties
+edge_vcenter_host:         # EDIT - If filled, then Edges would use this separate vcenter
+edge_vcenter_usr:          # EDIT -  Use Edge specific vCenter
+edge_vcenter_pwd:          # EDIT -  Use Edge specific vCenter
+edge_vcenter_datacenter:   # EDIT -  Use Edge specific vCenter
+edge_vcenter_datastore:    # EDIT -  Use Edge specific vCenter
+edge_vcenter_cluster:      # EDIT -  Use Edge specific vCenter
+edge_vcenter_rp:           # EDIT -  Use Edge specific vCenter
+edge_ntpservers:           # EDIT -  Use Edge specific vCenter
+edge_mgmt_portgroup:       # EDIT -  Use Edge specific vCenter
+edge_dnsserver:            # EDIT -  Use Edge specific vCenter
+edge_dnsdomain:            # EDIT -  Use Edge specific vCenter
+edge_defaultgateway:       # EDIT -  Use Edge specific vCenter
+edge_netmask:              # EDIT -  Use Edge specific vCenter
 
-# Edit fololowing parameters
-nsx_t_manager_host_name: nsx-mgr.corp.local # Set as FQDN, will be used also as certifi                                                                                          cate common name
-nsx_t_manager_vm_name: 'NSX-T Mgr'               # Can have spaces
-nsx_t_manager_ip: 192.168.110.33
+# Edit following parameters
+nsx_t_manager_host_name: nsx-mgr.corp.local # Set as FQDN, will be used also as certificate common name
+nsx_t_manager_vm_name: 'NSX-T Mgr'          # Can have spaces
+nsx_t_manager_ip: 192.168.110.34
 nsx_t_manager_admin_user: admin
-nsx_t_manager_admin_pwd: VMware1!         # Min 8 chars, upper, lower, number, special                                                                                           digit
-nsx_t_manager_root_pwd: VMware1!          # Min 8 chars, upper, lower, number, special                                                                                           digit
-nsx_t_controller_host_prefix: nsx-t-ctl   # Without spaces, Generated controller would                                                                                           be nsx-t-ctrl-1.corp.local.io,...
-nsx_t_controller_vm_name_prefix: 'NSX-T Controller' # Generated edge host name would be                                                                                           "NSX-T Controller-1"
-nsx_t_controller_ips: 192.168.110.34,192.168.110.35,192.168.110.36 # Should be 1 or 3 i                                                                                          ps to maintain quorum for Controller Cluster
-nsx_t_controller_root_pwd: VMware1!       # Min 8 chars, upper, lower, number, special                                                                                           digit
-nsx_t_controller_cluster_pwd: VMware1!    # Min 8 chars, upper, lower, number, special                                                                                           digit
-nsx_t_edge_host_prefix: nsx-t-edge        # Without spaces, generated edge would be nsx                                                                                          -t-edge-1.corp.local.io,...
-nsx_t_edge_vm_name_prefix: 'NSX-T Edge'   # Generated edge host name would be "NSX-T Ed                                                                                          ge-1"
-nsx_t_edge_ips: 192.168.110.37,192.168.110.38   # comma separated ips, requires min 2 f                                                                                          or HA
-nsx_t_edge_root_pwd: VMware1!
-nsx_t_edge_portgroup_ext: ESXi-RegionA01-vDS-COMP        # For external routing
+nsx_t_manager_admin_pwd: EDIT_ME          # Min 8 chars, upper, lower, number, special digit
+nsx_t_manager_root_pwd: EDIT_ME           # Min 8 chars, upper, lower, number, special digit
+
+# Following properties can be used for deploying controller to same cluster/rp
+nsx_t_controller_host_prefix: nsx-t-ctl   # Without spaces, Generated controller would be nsx-t-ctrl-1.corp.local.io,...
+nsx_t_controller_vm_name_prefix: 'NSX-T Controller' # Generated edge host name would be "NSX-T Controller-1"
+nsx_t_controller_ips: 192.168.110.35,192.168.110.36,192.168.110.37 # Should be 1 or 3 ips to maintain quorum for Controller Cluster
+nsx_t_controller_root_pwd: EDIT_ME        # Min 8 chars, upper, lower, number, special digit
+nsx_t_controller_cluster_pwd: EDIT_ME     # Min 8 chars, upper, lower, number, special digit
+
+# Controllers would be deployed to the same Mgmt Cluster
+# as specified by the vcenter_host & vcenter_cluster
+# NOT RECOMMENDED To use separate cluster for each controller
+nsx_t_controllers_config:
+# CAUTION: Using different clusters for controllers require complex anti-affinity rules setup
+# If really want to spread controllers across different controllers,
+# remove previous line (the empty nsx_t_controllers_config) and
+# uncomment following nsx_t_controllers_config section, edit it to allow different clusters and resource pool per controller
+# nsx_t_controllers_config: |
+#   controllers:
+#     host_prefix: nsx-t-ctl  # EDIT_ME
+#     vm_name_prefix: NSX-T-Controller # EDIT_ME
+#     root_pwd: EDIT_ME       # EDIT_ME
+#     cluster_pwd: EDIT_ME    # EDIT_ME
+#     # Should be 1 or 3 members
+#     members:
+#     # EDIT ME to specify the correct cluster,
+#     #   resource pool, datastore per controller member
+#     - ip: 10.13.12.51        # EDIT_ME
+#       cluster: Cluster1      # EDIT_ME
+#       resource_pool: nsx_rp1 # EDIT_ME
+#       datastore: store1      # EDIT_ME
+#     - ip: 10.13.12.52        # EDIT_ME
+#       cluster: Cluster2      # EDIT_ME
+#       resource_pool: nsx_rp2 # EDIT_ME
+#       datastore: store2      # EDIT_ME
+#     - ip: 10.13.12.53        # EDIT_ME
+#       cluster: Cluster3      # EDIT_ME
+#       resource_pool: nsx_rp3 # EDIT_ME
+#       datastore: store3      # EDIT_ME
+
+nsx_t_edge_host_prefix: nsx-t-edge        # Without spaces, generated edge would be nsx-t-edge-1.corp.local.io,...
+nsx_t_edge_vm_name_prefix: 'NSX-T Edge'   # Generated edge host name would be "NSX-T Edge-1"
+nsx_t_edge_ips: 192.168.110.38,192.168.110.39 # comma separated ips, requires min 2 for HA
+nsx_t_edge_root_pwd: EDIT_ME
+nsx_t_edge_portgroup_ext: ESXi-RegionA01-vDS-COMP      # For external routing
 nsx_t_edge_portgroup_transport: VM-RegionA01-vDS-COMP  # For TEP/overlay
 
-# If ova deployment succeeded but controller membership failed or edges didnt get to jo                                                                                          in for any reason
+# If ova deployment succeeded but controller membership failed or edges didnt get to join for any reason
 # enable rerun of the configure controllers
-rerun_configure_controllers: false  # set it to true if you want to rerun the configure                                                                                           controllers
-                                    # (as part of base ova install job) even as ova dep                                                                                          loyment succeeded
+rerun_configure_controllers: false  # set it to true if you want to rerun the configure controllers
+                                    # (as part of base ova install job) even as ova deployment succeeded
 
 # Edge network interfaces
 # Network1 and Network4 are for mgmt and not used for uplink
@@ -87,19 +177,19 @@ rerun_configure_controllers: false  # set it to true if you want to rerun the co
 nsx_t_edge_overlay_interface: fp-eth1 # Wired to Network3
 nsx_t_edge_uplink_interface: fp-eth0  # Wired to Network2
 
-# Tunnel endpoint network ip pool - change pool_end based on # of members in the tep po                                                                                          ol
+# Tunnel endpoint network ip pool - change pool_end based on # of members in the tep pool
 nsx_t_tep_pool_name: tep-ip-pool
 nsx_t_tep_pool_cidr: 192.168.213.0/24
 nsx_t_tep_pool_gateway: 192.168.213.1
 nsx_t_tep_pool_start: 192.168.213.10
 nsx_t_tep_pool_end: 192.168.213.200
-nsx_t_tep_pool_nameserver: 192.168.110.10
+#nsx_t_tep_pool_nameserver: 192.168.110.10 # Not required
 
 # Memory reservation is turned ON by default with the NSX-T OVAs.
 # This would mean a deployment of an edge or a mgr would reserve full memory
 # leading to memory constraints
-# if nsx_t_keep_reservation to true  - would keep reservation ON, recommended for produ                                                                                          ction setups.
-# if nsx_t_keep_reservation to false - would turn reservation OFF, recommended for POCs                                                                                          , smaller setups.
+# if nsx_t_keep_reservation to true  - would keep reservation ON, recommended for production setups.
+# if nsx_t_keep_reservation to false - would turn reservation OFF, recommended for POCs, smaller setups.
 nsx_t_keep_reservation: false # for Prod setup
 
 # Default Sizing of NSX-T VMs
@@ -119,7 +209,7 @@ nsx_t_keep_reservation: false # for Prod setup
 # Size of the edge determines size of loadbalancers and # of lbrs.
 # So, choose the size of edge based on requirements
 nsx_t_mgr_deploy_size: small   # Recommended for real barebones demo, smallest setup
-#nsx_t_edge_deploy_size: medium # Recommended for POCs, smaller setup (# of lbrs very l                                                                                          imited)
+#nsx_t_edge_deploy_size: medium # Recommended for POCs, smaller setup (# of lbrs very limited)
 nsx_t_edge_deploy_size: large  # Recommended when 4 small lbrs are required
 
 # More control over memory and vcpu to use
@@ -142,12 +232,13 @@ nsx_t_overlay_hostswitch: hostswitch2
 nsx_t_vlan_hostswitch: hostswitch1
 
 # For Edge External uplink
+# Check with network admin if its tagged or untagged
 nsx_t_transport_vlan: 0
 
 nsx_t_vlan_transport_zone: vlan-tz
 nsx_t_overlay_transport_zone: overlay-tz
 
-nsx_t_pas_ncp_cluster_tag: pas1
+nsx_t_pas_ncp_cluster_tag: pks1
 
 nsx_t_edge_cluster: 'Edge Cluster'
 
@@ -159,7 +250,7 @@ nsx_t_single_uplink_profile_vlan: 0 # Default
 # For internal overlay connection used by Esxi hosts
 nsx_t_overlay_profile_name: "host-overlay-profile"
 nsx_t_overlay_profile_mtu: 1600 # Min 1600
-nsx_t_overlay_profile_vlan: 0
+nsx_t_overlay_profile_vlan: 0 # VLAN ID for the TEP/Overlay network
 
 # Specify an unused vmnic on esxi host to be used for nsx-t
 # can be multiple vmnics separated by comma
@@ -167,23 +258,28 @@ nsx_t_esxi_vmnics: vmnic1 # vmnic1,vmnic2...
 
 # Configs for T0Router (only one per run), T1Routers, Logical switches and tags...
 # Make sure the ncp/cluster tag matches the one defined at the top level.
-# Expects to use atleast 2 edge instances for HA
+# Expects to use atleast 2 edge instances for HA that need to be installed
 nsx_t_t0router_spec: |
   t0_router:
     name: DefaultT0Router
-    edge_index: nsx-t-edge-01
     ha_mode: 'ACTIVE_STANDBY'
-    ip1: 192.168.100.4/24
-    ip2: 192.168.100.5/24
-    vip: 192.168.100.3/24
+    # Specify the edges to be used for hosting the T0Router instance
+    edge_indexes:
+      # Index starts from 1 -> denoting nsx-t-edge-01
+      primary: 1   # Index for primary edge to be used
+      secondary: 2 # Index for secondary edge to be used
+    vip: 192.168.110.33/24
+    ip1: 192.168.110.31/24
+    ip2: 192.168.110.32/24
     vlan_uplink: 0
     static_route:
-      next_hop: 192.168.100.1
+      next_hop: 192.168.110.1
       network: 0.0.0.0/0
       admin_distance: 1
     tags:
-      ncp/cluster: 'pas1' # Should match the top level ncp/cluster tag value
-      testtag: 'testpas1'
+      ncp/cluster: 'pks1' # Should match the top level ncp/cluster tag value
+      ncp/shared_resource: 'true' # required for PKS
+      testtag: 'testpks1'
 
 # T1 Logical Router with associated logical switches
 # Add additional or comment off unnecessary t1 routers and switches as needed
@@ -197,43 +293,25 @@ nsx_t_t0router_spec: |
 nsx_t_t1router_logical_switches_spec: |
   t1_routers:
   # Add additional T1 Routers or collapse switches into same T1 Router as needed
-  # Comment off the following T1 Routers if there is no PAS
-  - name: T1-Router-PAS-Infra
-    switches:
-    - name: PAS-Infra
-      logical_switch_gw: 192.168.10.1 # Last octet should be 1 rather than 0
-      subnet_mask: 24
-
-  - name: T1-Router-PAS-ERT
-    switches:
-    - name: PAS-ERT
-      logical_switch_gw: 192.168.24.1 # Last octet should be 1 rather than 0
-      subnet_mask: 24
-
-  - name: T1-Router-PAS-Services
-    switches:
-    - name: PAS-Services
-      logical_switch_gw: 192.168.28.1 # Last octet should be 1 rather than 0
-      subnet_mask: 24
-
-  - name: T1-Router-PAS-DynamicServices
-    switches:
-    - name: PAS-DynamicServices
-      logical_switch_gw: 192.168.30.1 # Last octet should be 1 rather than 0
-      subnet_mask: 24
-
-  # Comment off the following T1 Routers if there is no PKS
+  # Sample for PKS - Ops Mgr, Bosh Director
   - name: T1-Router-PKS-Infra
     switches:
-    - name: PKS-Deployment
-      logical_switch_gw: 192.168.20.1 # Last octet should be 1 rather than 0
+    - name: PKS-Infra
+      logical_switch_gw: 172.23.1.1 # Last octet should be 1 rather than 0
       subnet_mask: 24
 
-  - name: T1Router-PKS-Clusters
+  # Hosts the PKS Controller & Harbor
+  - name: T1Router-PKS-Services
     switches:
-    - name: PKS-PKS-Clusters
-      logical_switch_gw: 192.168.40.1 # Last octet should be 1 rather than 0
+    - name: PKS-Services
+      logical_switch_gw: 172.23.2.1 # Last octet should be 1 rather than 0
       subnet_mask: 24
+
+  # - name: T1Router-PKS-K8s-Clusters
+  #   switches:
+  #   - name: PKS-K8s-Clusters
+  #     logical_switch_gw: 192.168.40.1 # Last octet should be 1 rather than 0
+  #     subnet_mask: 24
 
 
 # Make sure the ncp/cluster tag matches the one defined on the T0 Router
@@ -242,133 +320,99 @@ nsx_t_ha_switching_profile_spec: |
   ha_switching_profiles:
   - name: HASwitchingProfile
     tags:
-      ncp/cluster: 'pas1'  # Should match the top level ncp/cluster tag value
+      ncp/cluster: 'pks1'  # Should match the top level ncp/cluster tag value
       ncp/ha: 'true'       # Required for HA
-      testtag: 'testpas1'
+      testtag: 'testpks1'
 
 
 # Make sure the ncp/cluster tag matches the one defined on the T0 Router
 # Add additional container ip blocks as needed
 nsx_t_container_ip_block_spec: |
   container_ip_blocks:
-  - name: container-ip-block
-    cidr: 10.4.0.0/16
-    tags:
-      ncp/cluster: 'pas1' # Should match the top level ncp/cluster tag value
-      testtag: 'testpas1'
+    # For PKS clusters
+  - name: node-container-ip-block-pks-with-tag
+    cidr: 172.24.0.0/14
+    ncp/shared_resource: 'true'
+    # No tags for this block
+  - name: pod-container-ip-block-pks-with-tag
+    cidr: 172.28.0.0/14
+    ncp/shared_resource: 'true'
+    # No tags for this block
+
 
 
 # Make sure the ncp/cluster tag matches the one defined on the T0 Router for PAS
 # Make sure the ncp/shared tag is set to true for PKS
 # Additional the ncp/external tag should be set for external facing ip pool
 # Add additional exernal ip pools as needed
+# Change the cidr, gateway, nameserver, dns_domain as needed
+# The cidr, gateway, start/end ips should be reachable via static or bgp routing through T0 router
 nsx_t_external_ip_pool_spec: |
   external_ip_pools:
-  - name: snat-vip-pool-for-pas
-    cidr: 10.208.40.0/24
-    gateway: 10.208.40.1
-    start: 10.208.40.10 # Should not include gateway
-    end: 10.208.40.200  # Should not include gateway
-    tags:
-      ncp/cluster: 'pas1'   # Should match the top level ncp/cluster tag value for PAS
-      ncp/external: 'true'  # Required for external facing ips
-      testtag: 'testpas1'
-
   - name: snat-vip-pool-for-pks
-    cidr: 10.208.50.0/24
-    gateway: 10.208.50.1
-    start: 10.208.50.10 # Should not include gateway
-    end: 10.208.50.200  # Should not include gateway
+    cidr: 192.168.100.0/24 # Should be a 0/24 or some valid cidr, matching the external exposed uplink
+    gateway: 192.168.100.1
+    start: 192.168.100.32  # Should not include gateway
+    end: 192.168.100.63    # Should not include gateway
+    nameserver: 192.168.110.10
+    dns_domain: corp.local
     tags:
-      # Needs to have atleast one tag entry
-      ncp/external: 'true'  # Required for external facing ips
-      ncp/shared: 'true'    # Required for PKS
+      ncp/external: 'true'        # Required for external facing ips
+      ncp/shared_resource: 'true'   # Required for PKS
 
 # Specify NAT rules
-# Provide matching dnat and snat rule for specific vms by using ips for destination_net                                                                                          work and translated_network that need to be exposed like Ops Mgr
-# Provide snat rules for outbound from either container or a vm by specifying the sourc                                                                                          e_network (cidr) and translated network ip
+# Provide matching dnat and snat rule for specific vms by using ips for destination_network and translated_network that need to be exposed like Ops Mgr
+# Provide snat rules for outbound from either container or a vm by specifying the source_network (cidr) and translated network ip
+# Details of NAT:
+# Ingress into Ops Mgr: External IP of Ops Mgr -> DNAT -> translated into internal ip of Ops Mgr
+# Egress from Ops Mgr: internal ip of Ops Mgr -> SNAT -> translated into external IP of Ops Mgr
+# Ingress into PKS API Controller: External IP of controller -> DNAT -> translated into internal ip of controller
+# Egress from PKS API Controller: internal ip of controller -> SNAT -> translated into external IP of controller
+# Egress from PKS-Infra: cidr of pks infra -> SNAT -> translated into some external IP
+# Egress from PKS-Clusters: cidr of PKS-Clusters -> SNAT -> translated into some external IP
 nsx_t_nat_rules_spec: |
   nat_rules:
-  # Sample entry for allowing inbound to PAS Ops manager
+  # Sample entry for PKS PKS-Infra network - outbound/egress
+  - t0_router: DefaultT0Router
+    nat_type: snat
+    source_network: 172.23.1.0/24      # PKS Infra network cidr
+    translated_network: 192.168.110.41   # SNAT External Address for PKS networks
+    rule_priority: 8001                  # Lower priority
+
+  # Sample entry for PKS PKS-Clusters network - outbound/egress
+  - t0_router: DefaultT0Router
+    nat_type: snat
+    source_network: 172.23.2.0/24      # PKS Clusters network cidr
+    translated_network: 192.168.110.41   # SNAT External Address for PKS networks
+    rule_priority: 8001                  # Lower priority
+
+  # Sample entry for allowing inbound to PKS Ops manager - ingress
   - t0_router: DefaultT0Router
     nat_type: dnat
-    destination_network: 10.208.40.2   # External IP address for PAS opsmanager
-    translated_network: 192.168.10.2     # Internal IP of PAS Ops manager
+    destination_network: 192.168.110.40  # External IP address for PKS opsmanager
+    translated_network: 172.23.1.5     # Internal IP of PKS Ops manager
     rule_priority: 1024                  # Higher priority
-  # Sample entry for allowing outbound from PAS Ops Mgr to external
+  # Sample entry for allowing outbound from PKS Ops Mgr to external - egress
   - t0_router: DefaultT0Router
     nat_type: snat
-    source_network: 192.168.10.2         # Internal IP of PAS opsmanager
-    translated_network: 10.208.40.2      # External IP address for PAS opsmanager
+    source_network: 172.23.1.5           # Internal IP of PAS opsmanager
+    translated_network: 192.168.110.40   # External IP address for PAS opsmanager
     rule_priority: 1024                  # Higher priority
-  # Sample entry for PAS Infra network SNAT
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.10.0/24      # PAS Infra network cidr
-    translated_network: 10.208.40.3      # SNAT External Address for PAS networks
-    rule_priority: 8000                  # Lower priority
 
-  # Sample entry for PAS ERT network SNAT
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.24.0/24      # PAS ERT network cidr
-    translated_network: 10.208.40.3      # SNAT External Address for PAS networks
-    rule_priority: 8000                  # Lower priority
-
-  # Sample entry for PAS Services network SNAT
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.28.0/24      # PAS Services network cidr
-    translated_network: 10.208.40.3      # SNAT External Address for PAS networks
-    rule_priority: 8001                  # Lower priority
-
-  # Sample entry for PAS Dynamic Services network SNAT
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.30.0/24      # PAS Dynamic Services network cidr
-    translated_network: 10.208.40.3      # SNAT External Address for PAS networks
-    rule_priority: 8001                  # Lower priority
-
-  # Sample entry for PKS PKS-clusters network
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.40.0/24      # PKS Clusters network cidr
-    translated_network: 10.208.50.3      # SNAT External Address for PKS networks
-    rule_priority: 8001                  # Lower priority
-
-  # Sample entry for PKS PKS-Infra network
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.20.0/24      # PKS Infra network cidr
-    translated_network: 10.208.50.3      # SNAT External Address for PKS networks
-    rule_priority: 8001                  # Lower priority
-
-  # Sample entry for allowing inbound to PKS Ops manager
+  # Sample entry for allowing inbound to PKS Controller - ingress
+  # Not required if using nsx-t-ci-pipeline that would automatically figure out PKS controller ip
+  # and add new nat rule mapping external pks api controller ip to its internal ip
   - t0_router: DefaultT0Router
     nat_type: dnat
-    destination_network: 10.208.50.2     # External IP address for PKS opsmanager
-    translated_network: 192.168.20.2     # Internal IP of PKS Ops manager
+    destination_network: 192.168.110.30  # External IP address for PKS opsmanager
+    translated_network: 172.23.2.4     # Internal IP of PKS Ops Controller
     rule_priority: 1024                  # Higher priority
-  # Sample entry for allowing outbound from PKS Ops Mgr to external
+  # Sample entry for allowing outbound from PKS Controller to external - egress
   - t0_router: DefaultT0Router
     nat_type: snat
-    source_network: 192.168.20.2        # Internal IP of PAS opsmanager
-    translated_network: 10.208.50.2      # External IP address for PAS opsmanager
-    rule_priority: 1024                  # Higher priority
-
-  # Sample entry for allowing inbound to PKS Controller
-  - t0_router: DefaultT0Router
-    nat_type: dnat
-    destination_network: 10.208.50.4     # External IP address for PKS opsmanager
-    translated_network: 192.168.20.4     # Internal IP of PKS Ops Controller
-    rule_priority: 1024                  # Higher priority
-  # Sample entry for allowing outbound from PKS Controller to external
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.20.4        # Internal IP of PKS controller
-    translated_network: 10.208.50.4      # External IP address for PKS controller
-    rule_priority: 1024                  # Higher priority
-
+    source_network: 172.23.2.4        # Internal IP of PKS controller
+    destination_network: 192.168.110.30 # External IP address for PKS opsmanager
+    rule_priority: 1024                 # Higher priority
 
 nsx_t_csr_request_spec: |
   csr_request:
@@ -383,9 +427,9 @@ nsx_t_csr_request_spec: |
 
 # LBR definition
 # By default, all the server pools would use Layer 4 - TCP pass through
-# No ssl termination or handling, uses default tcp active monitor & auto map for virtua                                                                                          l server
+# No ssl termination or handling, uses default tcp active monitor & auto map for virtual server
 # Auto Map mode uses LB interface IP and ephemeral port.
-# In scenarios where both Clients and Pool Members are attached to the same Logical Rou                                                                                          ter,
+# In scenarios where both Clients and Pool Members are attached to the same Logical Router,
 # SNAT (Auto Map or IP List) must be used.
 
 # LBR Sizing guide
@@ -402,30 +446,6 @@ nsx_t_csr_request_spec: |
 # large     |    4     |   1       | 1 # Recommended for running PAS + PKS
 # Bare metal - not handled here
 
-nsx_t_lbr_spec: |
-  loadbalancers:
-  # Sample entry for creating LBR for PAS ERT
-  - name: PAS-ERT-LBR
-    t1_router: T1-Router-PAS-ERT # Should match a previously declared T1 Router
-    size: small                  # Allowed sizes: small, medium, large
-    virtual_servers:
-    - name: goRouter443         # Name that signifies function being exposed
-      vip: 10.208.40.4         # Exposed VIP for LBR to listen on
-      port: 443
-      members:
-      - ip: 192.168.24.11       # Internal ip of GoRouter instance 1
-        port: 443
-    - name: goRouter80
-      vip: 10.208.40.4
-      port: 80
-      members:
-      - ip: 192.168.24.31       # Internal ip of GoRouter instance 1
-        port: 80
-      - ip: 192.168.24.32       # Internal ip of GoRouter instance 2
-        port: 80
-    - name: sshProxy            # SSH Proxy exposed to outside
-      vip: 10.208.40.5
-      port: 2222                # Port 2222 for ssh proxy
-      members:
-      - ip: 192.168.24.41       # Internal ip of Diego Brain where ssh proxy runs
-        port: 2222
+# No need for any default Loadbalancers
+# Would be created on cluster creation automatically
+nsx_t_lbr_spec:
