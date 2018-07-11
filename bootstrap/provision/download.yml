@@ -15,6 +15,8 @@
         {{ deployroot }}/{{ solution_name }}-deploy/downloads/download.sh
         {{ download_dir }}/{{ download_bucket }}
       environment:
-       PIVNET_API_TOKEN: "{{ pivnet_api_token }}"
-       MY_VMWARE_USER: "{{ my_vmware_user }}"
-       MY_VMWARE_PASSWORD: "{{ my_vmware_password }}"
+        PIVNET_API_TOKEN: "{{ pivnet_api_token }}"
+        MY_VMWARE_USER: "{{ my_vmware_user }}"
+        MY_VMWARE_PASSWORD: "{{ my_vmware_password }}"
+    - name: set minio download access for /download/pks
+      shell: mc policy local/{{ download_bucket }} download

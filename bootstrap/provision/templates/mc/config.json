@@ -1,0 +1,12 @@
+{
+	"version": "9",
+	"hosts": {
+		"local": {
+			"url": "http://localhost:9091",
+			"accessKey": "{{ minio_access_key }}",
+			"secretKey": "{{ minio_secret_key }}",
+			"api": "S3v4",
+			"lookup": "auto"
+		}
+	}
+}

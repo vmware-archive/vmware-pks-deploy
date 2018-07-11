@@ -12,4 +12,14 @@
         mode: 0775
   roles:
     - minio
-  
+  post_tasks:
+    - name: create mc configuration directory
+      file:
+        state: directory
+        path: "~/.mc"
+        mode: 0755
+    - name: create mc configuration file
+      template:
+        src: templates/mc/config.json
+        dest: "~/.mc/config.json"
+        mode: 0600
