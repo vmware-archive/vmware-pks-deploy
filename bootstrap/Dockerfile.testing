@@ -6,6 +6,7 @@ ENV ANSIBLE_HOST_KEY_CHECKING=False
 
 RUN apt-get -qq update && apt-get install -y \
 		curl \
+		jq \
 		git \
 		openssh-server \
 		python-pip \
