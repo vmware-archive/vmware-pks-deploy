@@ -19,5 +19,3 @@
         MY_VMWARE_USER: "{{ my_vmware_user }}"
         MY_VMWARE_PASSWORD: "{{ my_vmware_password }}"
       when: do_download is defined and do_download|bool
-    - name: set minio download access for /download/pks
-      shell: mc policy download local/{{ download_bucket }}
