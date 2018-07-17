@@ -2,13 +2,13 @@ enable_ansible_debug: false # set value to true for verbose output from ansible
 nsx_t_installer: nsx-t-gen  # Set to name of installer or env or any value so resources can be identified
 
 # vCenter details to deploy the Mgmt OVAs (Mgr, Edge, Controller)
-vcenter_host: 192.168.110.22                # EDIT - this is for deployment of the ovas for the mgmt plane
+vcenter_host: vcsa-01a.corp.local           # EDIT - this is for deployment of the ovas for the mgmt plane
 vcenter_usr: administrator@corp.local       # EDIT - this is for deployment of the ovas for the mgmt plane
 vcenter_pwd: EDIT_ME                       # EDIT - this is for deployment of the ovas for the mgmt plane
 vcenter_datacenter: RegionA01               # EDIT
 vcenter_datastore: RegionA01-ISCSI01-COMP01 # EDIT
 vcenter_cluster: RegionA01-MGMT             # EDIT
-vcenter_manager: vcenter-1                  # EDIT
+vcenter_manager: vcsa-01a.corp.local        # EDIT
 vcenter_rp: PKS_pool                        # EDIT resource pool where mgmt VMs would be deployed
 
 
