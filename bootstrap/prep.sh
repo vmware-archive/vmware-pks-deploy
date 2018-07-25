@@ -20,7 +20,7 @@ UPTODATE=
 
 if [ $OS = "Ubuntu" ] && [ $VER = "16.04" ]; then
     apt-get update -qq
-    apt-get install docker.io git
+    apt-get install -y docker.io git
     UPTODATE=1
 fi
 

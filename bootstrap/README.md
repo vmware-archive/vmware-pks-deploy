@@ -93,6 +93,9 @@ After this completes, you should have a VM in the vCenter named after your `$VM_
 # -a <address> for existing VM, -u <user>, -d <deployroot>
 # E.g.
 ./entrypoint.sh -a my-bootstrapper -u gardnerj -d ../../my_deployroot
+# Also note: on OSX High Sierra, minio crashes with an error if you don't set
+# this variable:
+$ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 ```
 
 ## Capture an ovf
