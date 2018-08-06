@@ -28,7 +28,7 @@
 - name: Explicitly use single items as ranges when small scale
   set_fact:
     ranges: "{{ ranges }} + [{ 'min': {{ item }}, 'max': {{ item }} }]"
-  with_sequence: start=1 end={{ [max_ranges, pipeline_scale]|min }}
+  with_sequence: start=1 end={{ [max_ranges|int, pipeline_scale|int]|min }}
   when: "pipeline_scale|int < max_ranges"
 
 - name: Use larger block ranges when more than max_ranges
