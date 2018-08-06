@@ -4,10 +4,23 @@
   debug:
     msg: "Checking pipeline {{ pipeline_stat.path | basename }} for freshness"
 
+- name: Assume invalid pipeline name
+  set_fact:
+    invalid_pipeline: true
+  when:
+    - pipeline_stat.path is defined
+
+- name: Validate pipeline name
+  set_fact:
+    invalid_pipeline: false
+  when:
+    - pipeline_stat.path is match(".*.ya?ml(?:.j2)?$")
+
 - name: Check for existing pipeline checksum
   stat:
     path: "/tmp/{{ pipeline_stat.path | basename }}.checksum"
   register: pipelines_checksum_stat
+  when: not invalid_pipeline
 
 # handle an existing pipeline checksum
 - block:
@@ -18,20 +31,25 @@
     - name: Set pipelines checksum
       set_fact: previous_checksum="{{ previous_checksum.stdout }}"
 
-  when: pipelines_checksum_stat.stat.exists
+  when:
+    - not invalid_pipeline
+    - pipelines_checksum_stat.stat.exists
 
 - name: Write to pipeline checksum
   copy:
     content: "{{ pipeline_stat.checksum }}"
     dest: "/tmp/{{ pipeline_stat.path | basename }}.checksum"
-  when: not pipelines_checksum_stat.stat.exists or
-        (pipelines_checksum_stat.stat.exists and
-         previous_checksum != pipeline_stat.checksum)
+  when:
+    - not invalid_pipeline
+    - not pipelines_checksum_stat.stat.exists or
+      (pipelines_checksum_stat.stat.exists and
+      previous_checksum != pipeline_stat.checksum)
   register: updated_file
 
 - name: Super simple check for whether the file is a pipeline definition
   shell: cat "{{ pipeline_stat.path }}" | grep -e "^jobs:$"
   when:
+    - not invalid_pipeline
     - updated_file.changed
   register: have_pipeline
   failed_when: have_pipeline.rc > 1 or have_pipeline.rc < 0
@@ -55,7 +73,9 @@
     - name: Now we have the params we need
       set_fact:
         pipeline_params: "{{ pipeline_stat.path }}"
-  when: have_pipeline.changed and have_pipeline.rc > 0 and updated_file.changed
+  when:
+    - not invalid_pipeline
+    - have_pipeline.changed and have_pipeline.rc > 0 and updated_file.changed
 
 # If we do have a pipeline, look for the matching params file.
 # The convention is {pipeline}-params.yml
@@ -67,7 +87,7 @@
       set_fact:
         expected_params: >-
           {{ pipeline_stat.path |
-             regex_replace('^(.*).yml$', '\1-params.yml') }}
+             regex_replace('^(.*).ya?ml.*$', '\1-params.yml') }}
     - name: Check for expected params by computed name
       stat:
         path: "{{ expected_params }}"
@@ -80,6 +100,41 @@
       set_fact:
         pipeline_def: "{{ pipeline_stat.path }}"
   when: have_pipeline.changed and have_pipeline.rc == 0 and updated_file.changed
+
+# This is a workaround for the fact that sequences are still evaulated even
+# when they should be skipped by "when" clause.  There's a loop in the template
+# processing below that counts down from remainder, so remainder must
+# _always_ be initialized to a numeric value for the sequence to be valid.
+- name: Set a default to avoid a dumb issue with decrementing sequence
+  set_fact:
+    remainder: 1
+
+# This block allows pipeline to be defined as jinja2 files (if pipeline ends
+# in .yml.j2 .)  If a pipeline_scale_items variable is set, we load the
+# pipeline params and look for a host var with the name that is contained in
+# pipeline_scale_items, and count those things to determine pipeline scale.
+# Pipeline scale is then used to pass in distinct ranges into the pipeline
+# template, e.g. 1..10, 11..20, etc.  This allows the pipeline to break up
+# a large number of identical deployments into a visually distinct set of
+# parallel deployments.
+- name: Check for template pipeline
+  block:
+    - name: Load pipeline variables to determine ranges
+      include_vars:
+        file: "{{ pipeline_params }}"
+    - set_fact:
+        pipeline_location: "{{ pipeline_def | dirname }}"
+        pipeline_template: "{{ pipeline_def | basename }}"
+        pipeline_scale: >-
+          {{ hostvars[inventory_hostname][pipeline_scale_items] |length |int }}
+    - import_tasks: pipeline_parallelizer.yml
+  when:
+    - not invalid_pipeline
+    - have_pipeline.changed
+    - pipeline_def is defined
+    - pipeline_params is defined
+    - pipeline_scale_items is defined
+    - pipeline_def is match(".*.ya?ml.j2$")
 
 - name: Rerun fly command
   block:
@@ -100,6 +155,9 @@
         fly -t main unpause-pipeline
         -p {{ (pipeline_def | basename | splitext)[0] }}
   when:
+    - not invalid_pipeline
     - have_pipeline.changed
     - pipeline_def is defined
     - pipeline_params is defined
+  tags:
+    - reload

@@ -1,0 +1,69 @@
+# Copyright © 2018 VMware, Inc. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+---
+# These tasks slice up a Concourse pipeline into parallel chunks.
+
+- name: Extract pipeline parts
+  set_fact:
+    pipeline_location: "{{ pipeline_def | dirname }}"
+    pipeline_template: "{{ pipeline_def | basename }}"
+
+- name: Initialize variables
+  set_fact:
+    ranges: []
+    range_min: 1
+    range_index: 0
+    range_extra: 0
+    remainder: 1
+
+- name: Initialize max number of ranges
+  set_fact:
+    max_ranges: 10
+  when: max_ranges is not defined
+
+# Note that we're taking the min of max_ranges and pipeline_scale, even when
+# the "when" has already guaranteed pipeline_scale is the min, because ansible
+# evaluates the sequence even when this is skipped, so it creates a super long
+# loop in the case where a large number is passed for pipeline_scale.
+- name: Explicitly use single items as ranges when small scale
+  set_fact:
+    ranges: "{{ ranges }} + [{ 'min': {{ item }}, 'max': {{ item }} }]"
+  with_sequence: start=1 end={{ [max_ranges, pipeline_scale]|min }}
+  when: "pipeline_scale|int < max_ranges"
+
+- name: Use larger block ranges when more than max_ranges
+  block:
+    - name: Set range size
+      set_fact:
+        range_size: >-
+          {{ (pipeline_scale|int / max_ranges|int) | round(0,'floor') }}
+    - name: Set remainder
+      set_fact:
+        remainder: >-
+          {{ pipeline_scale|int - (max_ranges|int * range_size|int) }}
+    - debug:
+        msg: "Range size is {{ range_size }}"
+    - set_fact:
+        range_extras: >-
+          {{ range_extras | default([]) + [1 | int] }}
+      with_sequence: start="{{ remainder|default(0) }}" end=0 stride=-1
+
+    - set_fact:
+        ranges: >-
+          {{ ranges }} + [ {
+          'min': {{ range_min|int }},
+          'max': {{ range_min|int + range_size|int - 1 + range_extras[item|int]|default(0)|int }}
+          } ]
+        range_min: "{{ range_min|int + range_size|int }}"
+        remainder: "{{ remainder|int - 1 }}"
+      with_sequence: start=1 end={{ max_ranges }}
+  when: pipeline_scale|int >= max_ranges
+
+- debug:
+    var: ranges
+
+- name: Transform pipeline for ranges of the total
+  template:
+    src: "{{ pipeline_def }}"
+    dest: "{{ pipeline_location }}/{{ (pipeline_template | splitext)[0] }}"
+  when: not ansible_check_mode
