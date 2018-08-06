@@ -6,5 +6,6 @@ downloads/config.json
 downloads/files.json
 downloads/index.json
 downloads/product.json
+parse-ova-linux
 solution-name
 *.retry
