@@ -15,7 +15,7 @@
         path: "{{ item }}"
         follow: True
       register: all_pipelines_stats
-      with_fileglob: "{{ pipelines_home }}/*.yml"
+      with_fileglob: "{{ pipelines_home }}/*.yml*"
       when: pipelines_stat.stat.exists
 
     - name: Iterate over pipelines
