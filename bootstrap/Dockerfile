@@ -1,3 +1,6 @@
+#Copyright (c) 2018 VMware, Inc. All Rights Reserved.
+#
+#SPDX-License-Identifier: MIT
 FROM alpine:3.7
 
 ENV GOVC=https://github.com/vmware/govmomi/releases/download/v0.18.0/govc_linux_amd64.gz

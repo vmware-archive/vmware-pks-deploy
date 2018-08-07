@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+#Copyright (c) 2018 VMware, Inc. All Rights Reserved.
+#
+#SPDX-License-Identifier: MIT
+#
 
 export GOVC_NETWORK='VM Network'
 export GOVC_PASSWORD='VMware1!'
