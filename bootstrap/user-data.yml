@@ -1,4 +1,9 @@
 #cloud-config
+#
+#Copyright (c) 2018 VMware, Inc. All Rights Reserved.
+#
+#SPDX-License-Identifier: MIT
+#
 debug:
   verbose: true
 bootcmd:

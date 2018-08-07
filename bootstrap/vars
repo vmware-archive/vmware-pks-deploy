@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+#Copyright (c) 2018 VMware, Inc. All Rights Reserved.
+#
+#SPDX-License-Identifier: MIT
+#
 
 bosh_stemcell_username="EDIT_ME"
 bosh_stemcell_password="EDIT_ME"
