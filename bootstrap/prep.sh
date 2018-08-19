@@ -23,7 +23,7 @@ fi
 if [ "$OS" = "Ubuntu" ] && [ "$VER" = "16.04" ]; then
     # don't reinstall docker
     docker version >/dev/null 2>&1
-    if [ $? -eq 1 ]; then
+    if [ $? -ne 0 ]; then
         apt-get update -qq
         apt-get install docker.io git golang-go
     fi
