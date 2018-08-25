@@ -62,5 +62,5 @@
           cd $HOME/refly &&
           ansible-playbook -i inventory site.yml
           -e "@extra_vars.yml"
-          -vv >> refly.lastlog 2>&1
+          >> refly.log 2>&1 && savelog -q -p -c 30 refly.log
         user: "{{ deploy_user }}"
