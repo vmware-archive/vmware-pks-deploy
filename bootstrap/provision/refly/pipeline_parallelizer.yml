@@ -54,7 +54,9 @@
           'min': {{ range_min|int }},
           'max': {{ range_min|int + range_size|int - 1 + range_extras[item|int]|default(0)|int }}
           } ]
-        range_min: "{{ range_min|int + range_size|int }}"
+        range_min: >-
+          {{ range_min|int + range_size|int +
+          range_extras[item|int]|default(0)|int }}
         remainder: "{{ remainder|int - 1 }}"
       with_sequence: start=1 end={{ max_ranges }}
   when: pipeline_scale|int >= max_ranges
@@ -62,8 +64,28 @@
 - debug:
     var: ranges
 
+- debug:
+    var: pipeline_params
+
+- name: Set config version
+  block:
+    - command: date "+%Y%m%d%H%M%S"
+      register: datestamp
+    - set_fact:
+        config_version: "-{{ datestamp.stdout }}"
+  when: config_version is undefined
+
+- debug:
+    var: config_version
+  when: config_version is defined
+
 - name: Transform pipeline for ranges of the total
   template:
     src: "{{ pipeline_def }}"
-    dest: "{{ pipeline_location }}/{{ (pipeline_template | splitext)[0] }}"
+    dest: "/tmp/{{ (pipeline_template | splitext)[0] }}"
   when: not ansible_check_mode
+
+- name: Set pipeline name to processed file.
+  set_fact:
+    pipeline_def: >-
+      /tmp/{{ (pipeline_template | splitext)[0] }}

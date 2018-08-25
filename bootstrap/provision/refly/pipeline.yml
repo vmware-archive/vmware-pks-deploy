@@ -70,6 +70,16 @@
       set_fact:
         pipeline_def: "{{ expected_pipeline }}"
       when: now_have_pipeline is defined and now_have_pipeline.stat.exists
+    - name: No pipeline yet, check for template
+      stat:
+        path: "{{ expected_pipeline }}.j2"
+      register: now_have_pipeline_template
+    - name: Now we have the (template) pipeline we need
+      set_fact:
+        pipeline_def: "{{ expected_pipeline }}.j2"
+      when:
+        - now_have_pipeline_template is defined
+        - now_have_pipeline_template.stat.exists
     - name: Now we have the params we need
       set_fact:
         pipeline_params: "{{ pipeline_stat.path }}"
