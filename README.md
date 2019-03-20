@@ -14,7 +14,7 @@ for a step-by-step manual deploy using some automation
 * Use the PoC [Planning Reference](https://vault.vmware.com/group/vault-main-library/document-preview?fileId=38127906) document to vet the planned deployment
 * Use the [PKS Configuration Worksheet](https://vault.vmware.com/group/vault-main-library/document-preview?fileId=38127882) to identify and track needed configuration that must be captured as YAML for the pipelines to work properly
 
-## High level end-to-end PKS deploment
+## High level end-to-end PKS deployment
 
 The overall process for a PKS and NSX-T deployment is
 
